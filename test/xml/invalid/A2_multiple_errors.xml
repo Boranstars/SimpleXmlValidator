@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.2 同时包含多种错误:
+     1. APP缺少必需属性 appname
+     2. QueryTime的time格式非法（斜杠分隔）
+     3. 第一个IED缺少 CompareTemplate 子元素
+     4. 第二个IED的Zone中 IsDifferent="yes" 违反 bool01Type
+     5. 第二个IED的Point缺少必需属性 other
+-->
+<APP appdesc="setting94">
+    <QueryTime time="2025/10/16 21:47:20">
+        <IED name="P_L5006A" desc="500kV线路1第一套保护">
+            <Record type="Setting" time="2025-10-16 21:47:20.292">
+                <Point path="P_L5006ALD0/PVTC1$SP$ING1" desc="本机间隔" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-16 21:47:20.292</Time>
+                        <IsDifferent>0</IsDifferent>
+                    </Zone>
+                </Point>
+            </Record>
+            <!-- 故意省略 CompareTemplate -->
+            <Result>比对一致</Result>
+        </IED>
+        <IED name="P_T0002A" desc="500kV主变第一套保护">
+            <Record type="Setting" time="2025-10-16 21:47:20.292">
+                <!-- Point缺少 other 属性 -->
+                <Point path="P_T0002ALD0/PVTC1$SP$ING1" desc="本机间隔">
+                    <Zone Number="1">
+                        <Value>0</Value>
+                        <Time>2025-10-16 21:47:24.000</Time>
+                        <!-- IsDifferent 值非法，应为 "0" 或 "1" -->
+                        <IsDifferent>yes</IsDifferent>
+                    </Zone>
+                </Point>
+            </Record>
+            <CompareTemplate>
+                <Point path="P_T0002ALD0/PVTC1$SP$ING1" desc="本机间隔" other="">
+                    <Zone Number="1">
+                        <Value>0</Value>
+                        <Time>2025-10-16 21:47:24.000</Time>
+                    </Zone>
+                </Point>
+            </CompareTemplate>
+            <Result>比对不一致</Result>
+        </IED>
+    </QueryTime>
+</APP>

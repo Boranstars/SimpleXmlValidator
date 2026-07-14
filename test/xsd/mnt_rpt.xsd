@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common_types.xsd"/>
+
+    <xs:element name="MntRpt">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Base" type="mntBaseType" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="Substation" type="nameDescType" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="Bay" type="nameDescType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="Ied" type="nameDescType" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="Step" type="mntStepType" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="mntBaseType">
+        <xs:attribute name="time" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="type" type="mntBaseTypeType" use="required"/>
+        <xs:attribute name="objName" type="xs:string" use="required"/>
+        <xs:attribute name="total_estimate" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="nameDescType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="mntStepType">
+        <xs:sequence>
+            <xs:element name="content" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="NO" type="integerTextType" use="required"/>
+        <xs:attribute name="ied_name" type="xs:string" use="required"/>
+        <xs:attribute name="ied_desc" type="xs:string" use="required"/>
+        <xs:attribute name="estimate" type="bool01Type" use="required"/>
+        <xs:attribute name="error_reason" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="mntStepTypeType" use="required"/>
+        <xs:attribute name="object_path" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="bool01Type" use="required"/>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.3 同时包含多种错误:
+     1. Base的time格式非法（斜杠分隔）
+     2. Base的total_estimate="2" 违反 bool01Type（只允许"0"/"1"）
+     3. 缺少必需的 Substation 子元素
+     4. Step的estimate="yes" 违反 bool01Type
+     5. Step缺少必需的 content 子元素
+-->
+<MntRpt>
+    <!-- time格式非法，total_estimate值非法 -->
+    <Base time="2026/05/21 10:46:43" type="模拟预演" objName="变压器间隔" total_estimate="2"/>
+    <!-- 故意省略 Substation -->
+    <Ied name="P_T0002A" desc="500kV主变第一套保护"/>
+    <!-- estimate值非法，且无content子元素 -->
+    <Step NO="1" ied_name="P_T0002A" ied_desc="500kV主变第一套保护"
+          estimate="yes" error_reason="" type="1" object_path="P_T0002A/CB1" value="0">
+    </Step>
+</MntRpt>

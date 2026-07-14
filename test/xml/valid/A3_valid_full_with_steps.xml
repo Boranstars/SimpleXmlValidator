@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.3 含Bay、多个Ied和Step，验证完整字段路径通过 -->
+<MntRpt>
+    <Base time="2026-05-21 10:46:43" type="模拟预演" objName="变压器间隔2" total_estimate="1"/>
+    <Substation name="gcce" desc="国控城东变电站"/>
+    <Bay name="变压器间隔2" desc="变压器间隔2"/>
+    <Ied name="P_T0002A" desc="500kV2#主变第一套保护"/>
+    <Ied name="P_T0002B" desc="500kV2#主变第二套保护"/>
+    <Step NO="1" ied_name="P_T0002A" ied_desc="500kV2#主变第一套保护"
+          estimate="1" error_reason="" type="1" object_path="P_T0002A/CB1" value="0">
+        <content>拉开主变高压侧断路器</content>
+    </Step>
+    <Step NO="2" ied_name="P_T0002A" ied_desc="500kV2#主变第一套保护"
+          estimate="0" error_reason="装置通信中断" type="2" object_path="P_T0002A/DS1" value="1">
+        <content>验证断路器确在分位</content>
+        <content>检查保护压板状态</content>
+    </Step>
+</MntRpt>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.4 SecCircuit/Item的IsDifferent属性值不是"0"或"1"（违反bool01Type枚举约束） -->
+<CheckReport>
+    <System>
+        <Substation>某变电站</Substation>
+        <CheckTime>2026-06-10 08:00:00</CheckTime>
+        <CheckReason>1</CheckReason>
+        <DeviceSum>10</DeviceSum>
+        <CheckDeviceSum>10</CheckDeviceSum>
+        <AbnormalDeviceSum>2</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <Item DeviceId="DEV001" DeviceName="线路保护A" IsChecked="1" UnCheckReason="0" Result="0">
+            <SecCircuit IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+    </Ied>
+    <SecCircuit>
+        <Item DeviceId="DEV001" PointId="PT001" PointName="二次回路检查"
+              RealVal="1" CheckTime="2026-06-10 08:00:00" IsDifferent="false"/>
+    </SecCircuit>
+</CheckReport>

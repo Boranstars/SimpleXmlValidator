@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.3 Base的total_estimate属性值不是"0"或"1"（违反bool01Type枚举约束） -->
+<MntRpt>
+    <Base time="2026-05-21 10:46:43" type="模拟预演" objName="5" total_estimate="true"/>
+    <Substation name="gcce" desc="gcce"/>
+    <Ied name="IED001" desc="线路保护装置"/>
+    <Step NO="1" ied_name="IED001" ied_desc="线路保护装置" estimate="0" error_reason="" type="1" object_path="/path/to/obj" value="0">
+        <content>合上某开关</content>
+    </Step>
+</MntRpt>

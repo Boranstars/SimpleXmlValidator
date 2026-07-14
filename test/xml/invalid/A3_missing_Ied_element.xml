@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.3 缺少必须的子元素 Ied（minOccurs="1"），至少要有一个Ied -->
+<MntRpt>
+    <Base time="2026-05-21 10:46:43" type="模拟预演" objName="5" total_estimate="0"/>
+    <Substation name="gcce" desc="gcce"/>
+    <Bay name="变压器间隔2" desc="变压器间隔2"/>
+</MntRpt>

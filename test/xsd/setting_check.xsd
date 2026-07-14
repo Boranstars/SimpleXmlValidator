@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common_types.xsd"/>
+
+    <xs:element name="APP">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="QueryTime" type="settingQueryTimeType" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="appname" type="xs:string" use="required"/>
+            <xs:attribute name="appdesc" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="settingQueryTimeType">
+        <xs:sequence>
+            <xs:element name="IED" type="settingIedType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="time" type="reportDateTimeType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingIedType">
+        <xs:sequence>
+            <xs:element name="Record" type="settingRecordType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CompareTemplate" type="settingPointListType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Result" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingRecordType">
+        <xs:sequence>
+            <xs:element name="Point" type="settingRecordPointType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="type" type="settingRecordTypeType" use="required"/>
+        <xs:attribute name="time" type="reportDateTimeType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingPointListType">
+        <xs:sequence>
+            <xs:element name="Point" type="settingTemplatePointType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="settingRecordPointType">
+        <xs:sequence>
+            <xs:element name="Zone" type="settingRecordZoneType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="path" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+        <xs:attribute name="other" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingTemplatePointType">
+        <xs:sequence>
+            <xs:element name="Zone" type="settingTemplateZoneType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="path" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+        <xs:attribute name="other" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingRecordZoneType">
+        <xs:sequence>
+            <xs:element name="Value" type="decimalTextType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Time" type="reportDateTimeType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="IsDifferent" type="bool01Type" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="Number" type="integerTextType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingTemplateZoneType">
+        <xs:sequence>
+            <xs:element name="Value" type="decimalTextType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Time" type="reportDateTimeType" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="Number" type="integerTextType" use="required"/>
+    </xs:complexType>
+</xs:schema>

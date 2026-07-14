@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.3 缺少必须的子元素 Base（minOccurs="1"），序列约束违规 -->
+<MntRpt>
+    <Substation name="gcce" desc="gcce"/>
+    <Ied name="IED001" desc="线路保护装置"/>
+</MntRpt>

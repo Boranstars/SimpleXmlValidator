@@ -1,0 +1,85 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="校验失败" id="xml-ui-failed">
+    <mxGraphModel dx="1471" dy="824" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="800" width="1190" x="90" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="xmlInput" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="xml路径" vertex="1">
+          <mxGeometry height="30" width="710" x="230" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="xmlButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="选择" vertex="1">
+          <mxGeometry height="30" width="80" x="990" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="xsdInput" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="xsd路径" vertex="1">
+          <mxGeometry height="30" width="710" x="230" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="xsdButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="选择" vertex="1">
+          <mxGeometry height="30" width="80" x="990" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="validateButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="开始校验" vertex="1">
+          <mxGeometry height="60" width="255" x="565" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="playIcon" parent="1" style="triangle;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="590" y="875" as="geometry" />
+        </mxCell>
+        <mxCell id="failedBanner" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#c62828;strokeColor=#8e0000;fontColor=#ffffff;fontSize=22;fontStyle=1;" value="XML 未通过校验" vertex="1">
+          <mxGeometry height="58" width="925" x="230" y="970" as="geometry" />
+        </mxCell>
+        <mxCell id="errorCount" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=16;" value="错误数量：3" vertex="1">
+          <mxGeometry height="30" width="180" x="230" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="table" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;strokeColor=default;fontSize=16;" value="校验结果详情" vertex="1">
+          <mxGeometry height="270" width="925" x="230" y="1090" as="geometry" />
+        </mxCell>
+        <mxCell id="rowHeader" parent="table" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="81" width="925" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="headSeverity" parent="rowHeader" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;fontStyle=1;" value="级别" vertex="1">
+          <mxGeometry height="81" width="100" as="geometry"><mxRectangle height="81" width="100" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="headLine" parent="rowHeader" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;fontStyle=1;" value="行号" vertex="1">
+          <mxGeometry height="81" width="120" x="100" as="geometry"><mxRectangle height="81" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="headCol" parent="rowHeader" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;fontStyle=1;" value="列号" vertex="1">
+          <mxGeometry height="81" width="120" x="220" as="geometry"><mxRectangle height="81" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="headMessage" parent="rowHeader" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=16;fontStyle=1;" value="错误描述" vertex="1">
+          <mxGeometry height="81" width="585" x="340" as="geometry"><mxRectangle height="81" width="585" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="row1" parent="table" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="78" width="925" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="r1Severity" parent="row1" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Error" vertex="1">
+          <mxGeometry height="78" width="100" as="geometry"><mxRectangle height="78" width="100" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r1Line" parent="row1" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="12" vertex="1">
+          <mxGeometry height="78" width="120" x="100" as="geometry"><mxRectangle height="78" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r1Col" parent="row1" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="15" vertex="1">
+          <mxGeometry height="78" width="120" x="220" as="geometry"><mxRectangle height="78" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r1Message" parent="row1" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;align=left;spacingLeft=8;" value="missing required attribute 'DeviceId'" vertex="1">
+          <mxGeometry height="78" width="585" x="340" as="geometry"><mxRectangle height="78" width="585" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="row2" parent="table" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="81" width="925" y="189" as="geometry" />
+        </mxCell>
+        <mxCell id="r2Severity" parent="row2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="Error" vertex="1">
+          <mxGeometry height="81" width="100" as="geometry"><mxRectangle height="81" width="100" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r2Line" parent="row2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="18" vertex="1">
+          <mxGeometry height="81" width="120" x="100" as="geometry"><mxRectangle height="81" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r2Col" parent="row2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;" value="32" vertex="1">
+          <mxGeometry height="81" width="120" x="220" as="geometry"><mxRectangle height="81" width="120" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+        <mxCell id="r2Message" parent="row2" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=14;align=left;spacingLeft=8;" value="value 'false' not in enumeration" vertex="1">
+          <mxGeometry height="81" width="585" x="340" as="geometry"><mxRectangle height="81" width="585" as="alternateBounds" /></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

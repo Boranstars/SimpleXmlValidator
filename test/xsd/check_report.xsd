@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="common_types.xsd"/>
+
+    <xs:element name="CheckReport">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="System" type="checkSystemType" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="Ied" type="checkIedSummaryType" minOccurs="1" maxOccurs="1"/>
+                <xs:choice minOccurs="1" maxOccurs="unbounded">
+                    <xs:element name="DiffZone" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffSetting" type="settingDetailSectionType"/>
+                    <xs:element name="DiffSoftPlate" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffSoftplate" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffHardPlate" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffHardplate" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffDiscrete" type="integerCompareValueSectionType"/>
+                    <xs:element name="DiffClock" type="clockSectionType"/>
+                    <xs:element name="CommStatus" type="commStatusSectionType"/>
+                    <xs:element name="SecCircuit" type="secCircuitSectionType"/>
+                    <xs:element name="OpCheck" type="opCheckSectionType"/>
+                    <xs:element name="CRCCheck" type="crcSectionType"/>
+                    <xs:element name="CRC" type="crcSectionType"/>
+                    <xs:element name="SoftVersion" type="versionSectionType"/>
+                    <xs:element name="SelfAlarm" type="binaryAlarmSectionType"/>
+                    <xs:element name="GpsAlarm" type="binaryAlarmSectionType"/>
+                    <xs:element name="Wave" type="waveSectionType"/>
+                    <xs:element name="DiffAnalog" type="analogSectionType"/>
+                    <xs:element name="Sample" type="analogSectionType"/>
+                    <xs:element name="DiffCurrent" type="analogSectionType"/>
+                    <xs:element name="Loop" type="analogSectionType"/>
+                    <xs:element name="Channel" type="binaryAlarmSectionType"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="checkSystemType">
+        <xs:sequence>
+            <xs:element name="Substation" type="string1To64Type" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CheckTime" type="reportDateTimeType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CheckReason" type="checkReasonType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="DeviceSum" type="nonNegativeInt32TextType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="CheckDeviceSum" type="nonNegativeInt32TextType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="AbnormalDeviceSum" type="nonNegativeInt32TextType" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="checkIedSummaryType">
+        <xs:sequence>
+            <xs:element name="Item" type="checkIedSummaryItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="checkIedSummaryItemType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="Zone" type="checkedStatusType"/>
+            <xs:element name="Setting" type="checkedStatusType"/>
+            <xs:element name="SoftPlate" type="checkedStatusType"/>
+            <xs:element name="HardPlate" type="checkedStatusType"/>
+            <xs:element name="Discrete" type="checkedStatusType"/>
+            <xs:element name="Clock" type="checkedStatusType"/>
+            <xs:element name="CommStatus" type="checkedStatusType"/>
+            <xs:element name="SecCircuit" type="checkedStatusType"/>
+            <xs:element name="OpCheck" type="checkedStatusType"/>
+            <xs:element name="CRCCheck" type="checkedStatusType"/>
+            <xs:element name="SoftVersion" type="checkedStatusType"/>
+            <xs:element name="SelfAlarm" type="checkedStatusType"/>
+            <xs:element name="GpsAlarm" type="checkedStatusType"/>
+            <xs:element name="Wave" type="checkedStatusType"/>
+            <xs:element name="Analog" type="checkedStatusType"/>
+            <xs:element name="Loop" type="checkedStatusType"/>
+            <xs:element name="Channel" type="checkedStatusType"/>
+        </xs:choice>
+        <xs:attribute name="DeviceId" type="string1To256Type" use="required"/>
+        <xs:attribute name="DeviceName" type="string1To64Type" use="required"/>
+        <xs:attributeGroup ref="checkedSummaryAttrs"/>
+    </xs:complexType>
+
+    <xs:complexType name="checkedStatusType">
+        <xs:attributeGroup ref="checkedStatusAttrs"/>
+    </xs:complexType>
+
+    <xs:complexType name="binaryAlarmSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="binaryAlarmItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="binaryAlarmItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="RealVal" type="bool01Type" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="secCircuitSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="secCircuitItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="secCircuitItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="RealVal" type="int8TextType" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="commStatusSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="commStatusItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="commStatusItemType">
+        <xs:attribute name="DeviceId" type="string1To256Type" use="required"/>
+        <xs:attribute name="RealVal" type="bool01Type" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="analogSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="analogItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="analogItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="ValType" type="string1To64Type" use="required"/>
+        <xs:attribute name="RealVal" type="decimalTextType" use="required"/>
+        <xs:attribute name="LowerLimit" type="decimalTextType" use="required"/>
+        <xs:attribute name="UpperLimit" type="decimalTextType" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="integerCompareValueSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="integerCompareValueItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="integerCompareValueItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="ValType" type="string1To64Type" use="required"/>
+        <xs:attribute name="RefVal" type="integerTextType" use="required"/>
+        <xs:attribute name="RealVal" type="integerTextType" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="settingDetailSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="settingDetailItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="settingDetailItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="ValType" type="string1To64Type" use="required"/>
+        <xs:attribute name="RefVal" type="string1To64Type" use="required"/>
+        <xs:attribute name="RealVal" type="string1To64Type" use="required"/>
+        <xs:attribute name="ZoneNo" type="integerTextType" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="clockSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="clockItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="clockItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="ValType" type="string1To64Type" use="required"/>
+        <xs:attribute name="RefVal" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="RealVal" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="versionSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="versionItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="versionItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="RefVal" type="string1To64Type" use="required"/>
+        <xs:attribute name="RealVal" type="string1To64Type" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="waveSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="waveItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="waveItemType">
+        <xs:attribute name="DeviceId" type="string1To256Type" use="required"/>
+        <xs:attribute name="RealVal" type="string1To128Type" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="opCheckSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="opCheckItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="opCheckItemType">
+        <xs:attributeGroup ref="devicePointAttrs"/>
+        <xs:attribute name="RealVal" type="bool01Type" use="required"/>
+        <xs:attribute name="Quality" type="bitString13Type" use="required"/>
+        <xs:attribute name="OpTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="RCDFile" type="xs:string" use="required"/>
+        <xs:attribute name="MIDFile" type="xs:string" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="crcSectionType">
+        <xs:sequence>
+            <xs:element name="Item" type="crcItemType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="crcItemType">
+        <xs:attribute name="DeviceId" type="string1To256Type" use="required"/>
+        <xs:attribute name="CRCVal" type="xs:string" use="required"/>
+        <xs:attribute name="RefVal" type="xs:string" use="required"/>
+        <xs:attribute name="CheckTime" type="reportDateTimeType" use="required"/>
+        <xs:attribute name="IsDifferent" type="bool01Type" use="required"/>
+    </xs:complexType>
+</xs:schema>

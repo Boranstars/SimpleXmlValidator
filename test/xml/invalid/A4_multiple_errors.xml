@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.4 同时包含多种错误:
+     1. System缺少必需子元素 CheckTime
+     2. System缺少必需子元素 CheckReason
+     3. Ied的Item缺少必需属性 DeviceId
+     4. Ied的Item的 IsChecked="maybe" 违反 bool01Type
+     5. DiffZone的Item缺少必需属性 DeviceId
+     6. DiffZone的Item的 IsDifferent="true" 违反 bool01Type
+-->
+<CheckReport>
+    <System>
+        <Substation>某变电站</Substation>
+        <!-- 故意省略 CheckTime 和 CheckReason -->
+        <DeviceSum>10</DeviceSum>
+        <CheckDeviceSum>8</CheckDeviceSum>
+        <AbnormalDeviceSum>2</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <!-- 缺少 DeviceId，IsChecked 值非法 -->
+        <Item DeviceName="线路保护A" IsChecked="maybe" UnCheckReason="0" Result="1">
+            <Zone IsChecked="1" UnCheckReason="0" result="1"/>
+        </Item>
+    </Ied>
+    <DiffZone>
+        <!-- 缺少 DeviceId，IsDifferent 值非法 -->
+        <Item PointId="PT_ZONE1" PointName="定值区1"
+              ValType="int" RefVal="1" RealVal="2"
+              CheckTime="2026-06-10 08:00:01" IsDifferent="true"/>
+    </DiffZone>
+</CheckReport>

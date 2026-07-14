@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.4 含多种详细段（DiffZone/SecCircuit/SoftVersion/CRCCheck），验证 xs:choice 覆盖 -->
+<CheckReport>
+    <System>
+        <Substation>国控城东变电站</Substation>
+        <CheckTime>2026-06-10 08:00:00</CheckTime>
+        <CheckReason>2</CheckReason>
+        <DeviceSum>20</DeviceSum>
+        <CheckDeviceSum>18</CheckDeviceSum>
+        <AbnormalDeviceSum>3</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <Item DeviceId="DEV001" DeviceName="500kV线路保护A" IsChecked="1" UnCheckReason="0" Result="1">
+            <Zone IsChecked="1" UnCheckReason="0" result="1"/>
+            <SoftVersion IsChecked="1" UnCheckReason="0" result="0"/>
+            <CRCCheck IsChecked="1" UnCheckReason="0" result="0"/>
+            <SecCircuit IsChecked="1" UnCheckReason="0" result="1"/>
+        </Item>
+        <Item DeviceId="DEV002" DeviceName="母线保护" IsChecked="1" UnCheckReason="0" Result="0">
+            <CommStatus IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+    </Ied>
+    <DiffZone>
+        <Item DeviceId="DEV001" PointId="PT_ZONE1" PointName="定值区1"
+              ValType="int" RefVal="1" RealVal="2"
+              CheckTime="2026-06-10 08:00:01" IsDifferent="1"/>
+    </DiffZone>
+    <SecCircuit>
+        <Item DeviceId="DEV001" PointId="PT_SC1" PointName="跳闸回路1"
+              RealVal="0" CheckTime="2026-06-10 08:00:02" IsDifferent="1"/>
+        <Item DeviceId="DEV001" PointId="PT_SC2" PointName="合闸回路1"
+              RealVal="1" CheckTime="2026-06-10 08:00:02" IsDifferent="0"/>
+    </SecCircuit>
+    <SoftVersion>
+        <Item DeviceId="DEV001" PointId="PT_VER" PointName="软件版本"
+              RefVal="V1.00" RealVal="V1.00"
+              CheckTime="2026-06-10 08:00:03" IsDifferent="0"/>
+    </SoftVersion>
+    <CRCCheck>
+        <Item DeviceId="DEV001" CRCVal="0xABCD1234" RefVal="0xABCD1234"
+              CheckTime="2026-06-10 08:00:04" IsDifferent="0"/>
+    </CRCCheck>
+</CheckReport>

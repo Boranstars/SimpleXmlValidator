@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 测试角度: A.2 APP下缺少必须的子元素 QueryTime（minOccurs="1"） -->
+<APP appname="setting94" appdesc="setting94">
+</APP>

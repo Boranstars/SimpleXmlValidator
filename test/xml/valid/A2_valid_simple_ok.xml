@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 测试角度: A.2 最简合法结构，Point均包含必需Zone，Result为"比对一致" -->
+<APP appname="setting94" appdesc="setting94">
+    <QueryTime time="2025-10-14 09:57:05.584">
+        <IED name="P_L5006A" desc="500kV线路1第一套保护">
+            <Record type="Setting" time="2025-10-14 09:57:05.584">
+                <Point path="P_L5006ALD0/PVTC1$SP$ING1" desc="本机间隔" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                        <IsDifferent>0</IsDifferent>
+                    </Zone>
+                </Point>
+                <Point path="P_L5006ALD0/PVTC1$SP$ING2" desc="套别" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                        <IsDifferent>0</IsDifferent>
+                    </Zone>
+                </Point>
+                <Point path="P_L5006APROT/PPDIF1$SG$Enable" desc="纵联差动保护" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                        <IsDifferent>0</IsDifferent>
+                    </Zone>
+                </Point>
+            </Record>
+            <CompareTemplate>
+                <Point path="P_L5006ALD0/PVTC1$SP$ING1" desc="本机间隔" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                    </Zone>
+                </Point>
+                <Point path="P_L5006ALD0/PVTC1$SP$ING2" desc="套别" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                    </Zone>
+                </Point>
+                <Point path="P_L5006APROT/PPDIF1$SG$Enable" desc="纵联差动保护" other="">
+                    <Zone Number="1">
+                        <Value>1</Value>
+                        <Time>2025-10-14 09:57:05.584</Time>
+                    </Zone>
+                </Point>
+            </CompareTemplate>
+            <Result>比对一致</Result>
+        </IED>
+    </QueryTime>
+</APP>

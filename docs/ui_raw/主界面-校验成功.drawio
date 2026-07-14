@@ -1,0 +1,34 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="校验成功" id="xml-ui-success">
+    <mxGraphModel dx="1471" dy="824" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#ffffff;strokeColor=#111111;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="650" width="1190" x="90" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="xmlInput" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="xml路径" vertex="1">
+          <mxGeometry height="30" width="710" x="230" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="xmlButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="选择" vertex="1">
+          <mxGeometry height="30" width="80" x="990" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="xsdInput" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="xsd路径" vertex="1">
+          <mxGeometry height="30" width="710" x="230" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="xsdButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="选择" vertex="1">
+          <mxGeometry height="30" width="80" x="990" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="validateButton" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#ffffff;strokeColor=#111111;fontSize=14;" value="开始校验" vertex="1">
+          <mxGeometry height="60" width="255" x="565" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="playIcon" parent="1" style="triangle;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111111;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="590" y="875" as="geometry" />
+        </mxCell>
+        <mxCell id="successBanner" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#2e7d32;strokeColor=#1b5e20;fontColor=#ffffff;fontSize=22;fontStyle=1;" value="XML 通过校验" vertex="1">
+          <mxGeometry height="58" width="925" x="230" y="1010" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

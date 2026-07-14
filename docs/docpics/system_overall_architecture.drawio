@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="系统总体架构">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="XML 语法校验工具系统总体架构" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="400" y="30" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="gui" value="&lt;b&gt;GUI 界面层&lt;/b&gt;&#xa;文件选择 / 按钮控制&#xa;校验状态提示&#xa;错误表格展示 / 异常弹窗" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="100" width="560" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="biz" value="&lt;b&gt;业务逻辑层&lt;/b&gt;&#xa;输入路径检查与绝对路径转换&#xa;XmlValidator 校验流程控制&#xa;ValidationResult 结果封装" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="340" width="560" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="third" value="&lt;b&gt;第三方库封装层&lt;/b&gt;&#xa;Xerces-C++ 初始化与释放&#xa;Parser 参数配置 / XSD 加载和校验&#xa;ErrorHandler 收集原始解析错误" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=15;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="600" width="560" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="log" value="&lt;b&gt;日志记录模块&lt;/b&gt;&#xa;记录校验时间与文件路径&#xa;记录通过/失败状态&#xa;记录错误详情和系统异常" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="330" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="test" value="&lt;b&gt;测试模块&lt;/b&gt;&#xa;有效/无效 XML 样例测试&#xa;路径异常和 XSD 异常测试&#xa;校验结果断言" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=15;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="70" y="330" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gui_biz_req" value="校验请求&#xa;XML/XSD 文件路径" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.42;exitY=1;exitDx=0;exitDy=0;entryX=0.42;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="gui" target="biz">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-60" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_biz_gui_res" value="ValidationResult&#xa;状态 + 错误列表" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.58;exitY=0;exitDx=0;exitDy=0;entryX=0.58;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="biz" target="gui">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_biz_third_req" value="绝对路径 + 校验配置&#xa;Parser 参数 / XSD 路径" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.42;exitY=1;exitDx=0;exitDy=0;entryX=0.42;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="biz" target="third">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-80" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_third_biz_res" value="解析状态&#xa;ValidationError 列表" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.58;exitY=0;exitDx=0;exitDy=0;entryX=0.58;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="third" target="biz">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_biz_log" value="校验日志事件&#xa;结果 / 错误详情 / 异常" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="biz" target="log">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gui_log" value="用户操作日志&#xa;文件选择 / 开始校验" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=1;exitY=0.55;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="gui" target="log">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1200" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_test_biz" value="测试用例输入&#xa;XML/XSD 样例路径" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" edge="1" parent="1" source="test" target="biz">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_biz_test" value="校验结果&#xa;用于断言" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=13;labelBackgroundColor=#ffffff;exitX=0;exitY=0.62;exitDx=0;exitDy=0;entryX=1;entryY=0.62;entryDx=0;entryDy=0;" edge="1" parent="1" source="biz" target="test">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="说明：GUI 层不直接依赖 Xerces-C++；第三方库细节被封装在 XmlValidator 相关实现内部。" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=13;fontColor=#666666;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="790" width="700" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 测试角度: A.4 最简合法结构，含System + Ied概要 + 一个详细段 -->
+<CheckReport>
+    <System>
+        <Substation>某变电站</Substation>
+        <CheckTime>2026-06-10 08:00:00</CheckTime>
+        <CheckReason>1</CheckReason>
+        <DeviceSum>10</DeviceSum>
+        <CheckDeviceSum>10</CheckDeviceSum>
+        <AbnormalDeviceSum>0</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <Item DeviceId="DEV001" DeviceName="线路保护A" IsChecked="1" UnCheckReason="0" Result="0">
+            <Zone IsChecked="1" UnCheckReason="0" result="0"/>
+            <SoftVersion IsChecked="1" UnCheckReason="0" result="0"/>
+            <CRCCheck IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+        <Item DeviceId="DEV002" DeviceName="变压器保护B" IsChecked="1" UnCheckReason="0" Result="0">
+            <CommStatus IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+    </Ied>
+    <CommStatus>
+        <Item DeviceId="DEV001" RealVal="1" CheckTime="2026-06-10 08:00:00" IsDifferent="0"/>
+    </CommStatus>
+</CheckReport>
