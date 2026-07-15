@@ -50,9 +50,12 @@ find_package(Qt5 COMPONENTS
 
 add_library(SimpleXmlValidatorCore STATIC
         src/core/validation/InputValidator.cpp
+        src/core/validation/XmlValidator.cpp
         src/infrastructure/xerces/XercesString.cpp
         src/infrastructure/xerces/XercesRuntime.cpp
         src/infrastructure/xerces/XercesErrorHandler.cpp
+        src/infrastructure/xerces/LocalResourceResolver.cpp
+        src/infrastructure/xerces/XercesSchemaValidator.cpp
 )
 target_include_directories(SimpleXmlValidatorCore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src

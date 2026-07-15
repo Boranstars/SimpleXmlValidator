@@ -111,7 +111,7 @@ struct ValidationResult {
 ## 8. 测试与验证
 
 - 核心校验逻辑使用 GTest；GUI 行为尽量通过可测试的展示/状态逻辑与业务逻辑解耦。
-- 优先复用 `test/xml/valid/`、`test/xml/invalid/` 与 `test/xsd/` 中的样例。新增回归用例时按合法/非法场景分类存放。
+- 优先复用 `tests/xml/valid/`、`tests/xml/invalid/` 与 `tests/xsd/` 中的样例。新增回归用例时按合法/非法场景分类存放。
 - 至少覆盖：合法 XML、格式不良好 XML、XSD 结构不匹配、必填元素/属性缺失、类型或枚举值错误、输入路径异常、无效 XSD 与 XSD 依赖加载失败。
 - 修改 CMake 或核心校验代码后，优先运行受影响的 GTest；在依赖齐备时再运行 CMake 配置、构建和完整测试。
 - 不要通过弱化 XSD 约束、吞掉异常或删除失败样例来让测试“通过”。

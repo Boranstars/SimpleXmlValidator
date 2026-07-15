@@ -24,6 +24,10 @@ protected:
         }
     }
 
+    static const simple_xml_validator::infrastructure::xerces::XercesRuntime& runtime() {
+        return *runtime_;
+    }
+
 private:
     inline static std::unique_ptr<simple_xml_validator::infrastructure::xerces::XercesRuntime> runtime_;
 };
