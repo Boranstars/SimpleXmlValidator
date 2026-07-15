@@ -7,7 +7,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 find_package(XercesC REQUIRED)
 find_package(spdlog REQUIRED)
-find_package(GTest REQUIRED)
 find_package(fmt REQUIRED)
 
 find_package(Qt5 COMPONENTS
@@ -18,12 +17,25 @@ find_package(Qt5 COMPONENTS
 
 
 
+add_library(SimpleXmlValidatorCore STATIC
+        src/core/validation/InputValidator.cpp
+)
+target_include_directories(SimpleXmlValidatorCore PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
 add_executable(SimpleXmlValidator main.cpp)
 target_link_libraries(SimpleXmlValidator
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
+        SimpleXmlValidatorCore
 )
+
+include(CTest)
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif ()
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
