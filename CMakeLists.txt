@@ -5,6 +5,37 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+
+option(SIMPLE_XML_VALIDATOR_ENABLE_ASAN "启用 AddressSanitizer（含 LeakSanitizer）" OFF)
+option(SIMPLE_XML_VALIDATOR_ENABLE_UBSAN "启用 UndefinedBehaviorSanitizer" OFF)
+
+add_library(SimpleXmlValidatorSanitizers INTERFACE)
+
+# Use sanitizer flags only if the compiler supports them
+if (SIMPLE_XML_VALIDATOR_ENABLE_ASAN OR SIMPLE_XML_VALIDATOR_ENABLE_UBSAN)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set(SIMPLE_XML_VALIDATOR_SANITIZER_FLAGS)
+
+        if (SIMPLE_XML_VALIDATOR_ENABLE_ASAN)
+            list(APPEND SIMPLE_XML_VALIDATOR_SANITIZER_FLAGS
+                    -fsanitize=address
+                    -fno-omit-frame-pointer)
+        endif ()
+
+        if (SIMPLE_XML_VALIDATOR_ENABLE_UBSAN)
+            list(APPEND SIMPLE_XML_VALIDATOR_SANITIZER_FLAGS
+                    -fsanitize=undefined)
+        endif ()
+
+        target_compile_options(SimpleXmlValidatorSanitizers INTERFACE
+                ${SIMPLE_XML_VALIDATOR_SANITIZER_FLAGS})
+        target_link_options(SimpleXmlValidatorSanitizers INTERFACE
+                ${SIMPLE_XML_VALIDATOR_SANITIZER_FLAGS})
+    else ()
+        message(WARNING "Sanitizer 选项当前仅支持 GNU 和 Clang 编译器，已忽略。")
+    endif ()
+endif ()
+
 find_package(XercesC REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
@@ -19,9 +50,18 @@ find_package(Qt5 COMPONENTS
 
 add_library(SimpleXmlValidatorCore STATIC
         src/core/validation/InputValidator.cpp
+        src/infrastructure/xerces/XercesString.cpp
+        src/infrastructure/xerces/XercesRuntime.cpp
+        src/infrastructure/xerces/XercesErrorHandler.cpp
 )
 target_include_directories(SimpleXmlValidatorCore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(SimpleXmlValidatorCore PRIVATE
+        XercesC::XercesC
+)
+target_link_libraries(SimpleXmlValidatorCore PUBLIC
+        SimpleXmlValidatorSanitizers
 )
 
 add_executable(SimpleXmlValidator main.cpp)
@@ -37,6 +77,7 @@ if (BUILD_TESTING)
     add_subdirectory(tests)
 endif ()
 
+# Copy Qt DLLs for Windows
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
     if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
