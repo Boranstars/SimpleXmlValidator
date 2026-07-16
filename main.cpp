@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     QApplication a(argc, argv);
     gui_ns::MainWindow window(runtime, &logManager);
-    window.resize(720, 560);
+    window.resize(1180, 720);
     window.show();
     const int code = QApplication::exec();
 

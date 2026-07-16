@@ -36,17 +36,30 @@ PresentedResult ValidationResultPresenter::initial() const {
 PresentedResult ValidationResultPresenter::present(const ValidationResult& result) const {
     PresentedResult presented;
 
+    // 错误/警告计数对所有已完成校验都可用（Valid 也可能带警告）。
+    for (const ValidationError& error : result.errors) {
+        if (error.severity == ErrorSeverity::Warning) {
+            ++presented.warningCount;
+        } else {
+            ++presented.errorCount;
+        }
+    }
+
     switch (result.status) {
         case ValidationStatus::Valid:
             // 绿色通过提示，不显示错误表格。
-            presented.banner     = BannerKind::Success;
-            presented.bannerText = "XML 通过校验";
+            presented.banner         = BannerKind::Success;
+            presented.bannerText     = "XML 通过校验";
+            presented.statusCard     = StatusCardKind::Valid;
+            presented.statusCardText = "校验通过";
             break;
 
         case ValidationStatus::Invalid: {
             // 红色未通过提示 + 错误总数 + 可滚动表格；不使用弹窗打断用户。
             presented.banner          = BannerKind::Failure;
             presented.bannerText      = "XML 未通过校验";
+            presented.statusCard      = StatusCardKind::Invalid;
+            presented.statusCardText  = "校验未通过";
             presented.showErrorTable  = true;
             presented.totalErrorCount = result.errors.size();
 
@@ -79,6 +92,8 @@ PresentedResult ValidationResultPresenter::present(const ValidationResult& resul
 
         case ValidationStatus::Failed:
             // 阻断性问题：清理普通结果区域，改用明确的阻断性弹窗提示。
+            presented.statusCard         = StatusCardKind::Failed;
+            presented.statusCardText     = "校验失败";
             presented.showBlockingDialog = true;
             presented.dialogMessage =
                 result.message.empty() ? "校验无法完成，请检查输入文件或稍后重试。"

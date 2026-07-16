@@ -17,6 +17,15 @@ enum class BannerKind {
     Failure   // 红色“XML 未通过校验”
 };
 
+// 校验状态卡片的语义种类。对应概念图顶部「校验状态」卡片，
+// 与 BannerKind 分开，因为 Failed 需要与 Invalid 区分展示。
+enum class StatusCardKind {
+    None,     // 初始状态：卡片不显示结果
+    Valid,    // 校验通过
+    Invalid,  // 校验未通过（内容不符合 XSD/格式）
+    Failed    // 校验失败（阻断性问题）
+};
+
 // 单条错误在表格中的展示形态。所有字段均为可直接渲染的字符串，
 // 行号/列号为 0 时表示位置未知，保持为 "0"，不伪造位置。
 // occurrences 为该 (级别,行号,列号,描述) 完全相同项被合并的次数（>=1）；
@@ -36,8 +45,14 @@ struct PresentedResult {
     BannerKind  banner    = BannerKind::None;
     std::string bannerText;
 
+    // 校验状态卡片（概念图顶部「校验状态」）。
+    StatusCardKind statusCard     = StatusCardKind::None;
+    std::string    statusCardText;
+
     bool                        showErrorTable  = false;
     std::size_t                 totalErrorCount = 0;   // 错误总数（合并前的真实条数）
+    std::size_t                 errorCount      = 0;   // Error + Fatal 计数
+    std::size_t                 warningCount    = 0;   // Warning 计数
     std::vector<PresentedError> errorRows;             // 合并后的错误行（受上限约束）
     bool                        truncated       = false;  // 是否因上限截断错误“类别”
 
