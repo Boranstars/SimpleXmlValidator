@@ -6,14 +6,14 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "BUILD_TESTING": "ON"
+        "BUILD_TESTING": "ON",
+        "CMAKE_PREFIX_PATH": "$env{QT_ROOT};$env{CMAKE_PREFIX_PATH}"
       }
     },
     {
       "name": "windows-vcpkg",
       "displayName": "Windows x64 (vcpkg)",
       "inherits": "base-vcpkg",
-      "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "binaryDir": "${sourceDir}/out/build/windows-vcpkg"
     },
@@ -21,7 +21,6 @@
       "name": "linux-vcpkg",
       "displayName": "Linux x64 (vcpkg)",
       "inherits": "base-vcpkg",
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/linux-vcpkg"
     }
   ],

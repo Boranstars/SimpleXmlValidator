@@ -9,6 +9,11 @@ set(CMAKE_AUTOUIC ON)
 option(SIMPLE_XML_VALIDATOR_ENABLE_ASAN "启用 AddressSanitizer（含 LeakSanitizer）" OFF)
 option(SIMPLE_XML_VALIDATOR_ENABLE_UBSAN "启用 UndefinedBehaviorSanitizer" OFF)
 
+# 使用MSVC编译器时，确保源文件以UTF-8编码编译，以避免中文路径或字符串导致的编译错误。
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 add_library(SimpleXmlValidatorSanitizers INTERFACE)
 
 # Use sanitizer flags only if the compiler supports them
@@ -91,7 +96,7 @@ endif ()
 
 # Copy Qt DLLs for Windows
 if (WIN32)
-    get_filename_component(QT_INSTALL_PATH "${Qt5Core_DIR}" DIRECTORY)
+        get_filename_component(QT_INSTALL_PATH "${Qt5Core_DIR}" DIRECTORY)
     get_filename_component(QT_INSTALL_PATH "${QT_INSTALL_PATH}" DIRECTORY)
     get_filename_component(QT_INSTALL_PATH "${QT_INSTALL_PATH}" DIRECTORY)
 
@@ -105,7 +110,7 @@ if (WIN32)
     foreach (QT_LIB Core Gui Widgets)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:Qt5::${QT_LIB}>"
+                                                                "$<TARGET_FILE:Qt5::${QT_LIB}>"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach (QT_LIB)
 endif ()
