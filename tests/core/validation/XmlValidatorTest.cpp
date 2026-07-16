@@ -8,12 +8,23 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <ostream>
 #include <string>
 #include <utility>
 
 namespace {
 
-class XmlValidatorTest : public XercesTestFixture {
+struct XmlFixtureCase {
+    const char* name;
+    const char* xmlRelativePath;
+    const char* xsdRelativePath;
+};
+
+void PrintTo(const XmlFixtureCase& testCase, std::ostream* output) {
+    *output << testCase.name;
+}
+
+class XmlValidatorFixture : public XercesTestFixture {
 protected:
     void SetUp() override {
         XercesTestFixture::SetUp();
@@ -40,57 +51,152 @@ protected:
         return std::filesystem::path(SIMPLE_XML_VALIDATOR_SOURCE_ROOT) / relativePath;
     }
 
+    static bool hasLocatedBlockingError(const ValidationResult& result) {
+        return std::any_of(result.errors.begin(), result.errors.end(), [](const ValidationError& error) {
+            return error.severity != ErrorSeverity::Warning && error.line > 0 && error.column > 0;
+        });
+    }
+
+    static bool hasErrorMessageToken(const ValidationResult& result, const std::string& token) {
+        return std::any_of(result.errors.begin(), result.errors.end(), [&token](const ValidationError& error) {
+            return error.severity != ErrorSeverity::Warning
+                   && error.message.find(token) != std::string::npos;
+        });
+    }
+
     std::filesystem::path temporaryDirectory_;
 };
 
-TEST_F(XmlValidatorTest, ReturnsValidForExistingA2A3AndA4Fixtures) {
-    const std::pair<std::filesystem::path, std::filesystem::path> cases[] = {
-        {"tests/xml/valid/A2_valid_simple_ok.xml", "tests/xsd/setting_check.xsd"},
-        {"tests/xml/valid/A3_valid_simple_with_step.xml", "tests/xsd/mnt_rpt.xsd"},
-        {"tests/xml/valid/A4_valid_simple_with_detail.xml", "tests/xsd/check_report.xsd"},
-    };
+class XmlValidatorTest : public XmlValidatorFixture {
+};
 
-    XmlValidator validator(runtime());
-    for (const auto& [xmlRelativePath, xsdRelativePath] : cases) {
-        const ValidationResult result = validator.validate(
-            fixturePath(xmlRelativePath), fixturePath(xsdRelativePath));
+class ValidXmlFixtureTest : public XmlValidatorFixture,
+                            public ::testing::WithParamInterface<XmlFixtureCase> {
+};
 
-        EXPECT_EQ(result.status, ValidationStatus::Valid) << xmlRelativePath;
-        EXPECT_TRUE(result.errors.empty()) << xmlRelativePath;
-    }
+class InvalidXmlFixtureTest : public XmlValidatorFixture,
+                              public ::testing::WithParamInterface<XmlFixtureCase> {
+};
+
+std::string fixtureCaseName(const ::testing::TestParamInfo<XmlFixtureCase>& info) {
+    return info.param.name;
 }
 
-TEST_F(XmlValidatorTest, ReturnsInvalidWithLocationsForSchemaConstraintErrors) {
-    const std::pair<std::filesystem::path, std::filesystem::path> cases[] = {
-        {"tests/xml/invalid/A2_missing_appname_attr.xml", "tests/xsd/setting_check.xsd"},
-        {"tests/xml/invalid/A3_invalid_total_estimate_value.xml", "tests/xsd/mnt_rpt.xsd"},
-        {"tests/xml/invalid/A4_ied_item_missing_DeviceId.xml", "tests/xsd/check_report.xsd"},
-    };
-
+TEST_P(ValidXmlFixtureTest, ReturnsValidWithoutErrors) {
+    const XmlFixtureCase& testCase = GetParam();
     XmlValidator validator(runtime());
-    for (const auto& [xmlRelativePath, xsdRelativePath] : cases) {
-        const ValidationResult result = validator.validate(
-            fixturePath(xmlRelativePath), fixturePath(xsdRelativePath));
 
-        ASSERT_EQ(result.status, ValidationStatus::Invalid) << xmlRelativePath;
-        ASSERT_FALSE(result.errors.empty()) << xmlRelativePath;
-        EXPECT_TRUE(std::any_of(result.errors.begin(), result.errors.end(), [](const ValidationError& error) {
-            return error.severity != ErrorSeverity::Warning && error.line > 0 && error.column > 0;
-        })) << xmlRelativePath;
-    }
-}
-
-TEST_F(XmlValidatorTest, PreservesMultipleXmlErrors) {
-    XmlValidator validator(runtime());
     const ValidationResult result = validator.validate(
-        fixturePath("tests/xml/invalid/A2_multiple_errors.xml"),
-        fixturePath("tests/xsd/setting_check.xsd"));
+        fixturePath(testCase.xmlRelativePath), fixturePath(testCase.xsdRelativePath));
+
+    EXPECT_EQ(result.status, ValidationStatus::Valid);
+    EXPECT_TRUE(result.errors.empty());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllValidFixtures,
+    ValidXmlFixtureTest,
+    ::testing::Values(
+        XmlFixtureCase{"A2ValidSimpleOk", "tests/xml/valid/A2_valid_simple_ok.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2ValidWithZone", "tests/xml/valid/A2_valid_with_zone.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A3ValidSimpleWithStep", "tests/xml/valid/A3_valid_simple_with_step.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3ValidFullWithSteps", "tests/xml/valid/A3_valid_full_with_steps.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A4ValidSimpleWithDetail", "tests/xml/valid/A4_valid_simple_with_detail.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4ValidMultiSections", "tests/xml/valid/A4_valid_multi_sections.xml", "tests/xsd/check_report.xsd"}),
+    fixtureCaseName);
+
+TEST_P(InvalidXmlFixtureTest, ReturnsLocatedInvalidDiagnostics) {
+    const XmlFixtureCase& testCase = GetParam();
+    XmlValidator validator(runtime());
+
+    const ValidationResult result = validator.validate(
+        fixturePath(testCase.xmlRelativePath), fixturePath(testCase.xsdRelativePath));
 
     ASSERT_EQ(result.status, ValidationStatus::Invalid);
-    ASSERT_GE(result.errors.size(), 2U);
-    EXPECT_TRUE(std::any_of(result.errors.begin(), result.errors.end(), [](const ValidationError& error) {
-        return error.severity != ErrorSeverity::Warning && error.line > 0 && error.column > 0;
-    }));
+    ASSERT_FALSE(result.errors.empty());
+    EXPECT_TRUE(hasLocatedBlockingError(result));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllInvalidFixtures,
+    InvalidXmlFixtureTest,
+    ::testing::Values(
+        XmlFixtureCase{"A2InvalidTimeFormat", "tests/xml/invalid/A2_invalid_time_format.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2MissingAppnameAttr", "tests/xml/invalid/A2_missing_appname_attr.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2MissingCompareTemplate", "tests/xml/invalid/A2_missing_CompareTemplate.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2MissingQueryTimeElement", "tests/xml/invalid/A2_missing_QueryTime_element.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2MissingResultElement", "tests/xml/invalid/A2_missing_Result_element.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2MultipleErrors", "tests/xml/invalid/A2_multiple_errors.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2PointMissingOtherAttr", "tests/xml/invalid/A2_point_missing_other_attr.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2ZoneInvalidIsDifferent", "tests/xml/invalid/A2_zone_invalid_IsDifferent.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A2ZoneMissingValue", "tests/xml/invalid/A2_zone_missing_Value.xml", "tests/xsd/setting_check.xsd"},
+        XmlFixtureCase{"A3InvalidBaseTimeFormat", "tests/xml/invalid/A3_invalid_Base_time_format.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3InvalidTotalEstimateValue", "tests/xml/invalid/A3_invalid_total_estimate_value.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3MissingBaseElement", "tests/xml/invalid/A3_missing_Base_element.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3MissingIedElement", "tests/xml/invalid/A3_missing_Ied_element.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3MissingSubstationElement", "tests/xml/invalid/A3_missing_Substation_element.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3MultipleErrors", "tests/xml/invalid/A3_multiple_errors.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A3StepInvalidEstimate", "tests/xml/invalid/A3_step_invalid_estimate.xml", "tests/xsd/mnt_rpt.xsd"},
+        XmlFixtureCase{"A4AlarmItemInvalidIsDifferent", "tests/xml/invalid/A4_alarm_item_invalid_IsDifferent.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4AlarmSectionMissingItem", "tests/xml/invalid/A4_alarm_section_missing_Item.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4IedItemMissingDeviceId", "tests/xml/invalid/A4_ied_item_missing_DeviceId.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4InvalidCheckTimeFormat", "tests/xml/invalid/A4_invalid_CheckTime_format.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4MissingIedSummary", "tests/xml/invalid/A4_missing_Ied_summary.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4MissingSystemElement", "tests/xml/invalid/A4_missing_System_element.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4MultipleErrors", "tests/xml/invalid/A4_multiple_errors.xml", "tests/xsd/check_report.xsd"},
+        XmlFixtureCase{"A4SystemMissingCheckTime", "tests/xml/invalid/A4_system_missing_CheckTime.xml", "tests/xsd/check_report.xsd"}),
+    fixtureCaseName);
+
+TEST_F(XmlValidatorTest, ReportsExpectedNamesForRequiredElementOmissions) {
+    const std::pair<XmlFixtureCase, std::string> cases[] = {
+        {{"A2MissingQueryTimeElement", "tests/xml/invalid/A2_missing_QueryTime_element.xml", "tests/xsd/setting_check.xsd"}, "QueryTime"},
+        {{"A3MissingBaseElement", "tests/xml/invalid/A3_missing_Base_element.xml", "tests/xsd/mnt_rpt.xsd"}, "Base"},
+        {{"A4MissingSystemElement", "tests/xml/invalid/A4_missing_System_element.xml", "tests/xsd/check_report.xsd"}, "System"},
+    };
+
+    XmlValidator validator(runtime());
+    for (const auto& [testCase, expectedToken] : cases) {
+        const ValidationResult result = validator.validate(
+            fixturePath(testCase.xmlRelativePath), fixturePath(testCase.xsdRelativePath));
+
+        ASSERT_EQ(result.status, ValidationStatus::Invalid) << testCase.name;
+        EXPECT_TRUE(hasLocatedBlockingError(result)) << testCase.name;
+        EXPECT_TRUE(hasErrorMessageToken(result, expectedToken)) << testCase.name;
+    }
+}
+
+TEST_F(XmlValidatorTest, ReportsExpectedNamesForRequiredAttributeOmissions) {
+    const std::pair<XmlFixtureCase, std::string> cases[] = {
+        {{"A2MissingAppnameAttr", "tests/xml/invalid/A2_missing_appname_attr.xml", "tests/xsd/setting_check.xsd"}, "appname"},
+        {{"A4IedItemMissingDeviceId", "tests/xml/invalid/A4_ied_item_missing_DeviceId.xml", "tests/xsd/check_report.xsd"}, "DeviceId"},
+    };
+
+    XmlValidator validator(runtime());
+    for (const auto& [testCase, expectedToken] : cases) {
+        const ValidationResult result = validator.validate(
+            fixturePath(testCase.xmlRelativePath), fixturePath(testCase.xsdRelativePath));
+
+        ASSERT_EQ(result.status, ValidationStatus::Invalid) << testCase.name;
+        EXPECT_TRUE(hasLocatedBlockingError(result)) << testCase.name;
+        EXPECT_TRUE(hasErrorMessageToken(result, expectedToken)) << testCase.name;
+    }
+}
+
+TEST_F(XmlValidatorTest, PreservesMultipleErrorsForAllSchemas) {
+    const XmlFixtureCase cases[] = {
+        {"A2MultipleErrors", "tests/xml/invalid/A2_multiple_errors.xml", "tests/xsd/setting_check.xsd"},
+        {"A3MultipleErrors", "tests/xml/invalid/A3_multiple_errors.xml", "tests/xsd/mnt_rpt.xsd"},
+        {"A4MultipleErrors", "tests/xml/invalid/A4_multiple_errors.xml", "tests/xsd/check_report.xsd"},
+    };
+
+    XmlValidator validator(runtime());
+    for (const XmlFixtureCase& testCase : cases) {
+        const ValidationResult result = validator.validate(
+            fixturePath(testCase.xmlRelativePath), fixturePath(testCase.xsdRelativePath));
+
+        ASSERT_EQ(result.status, ValidationStatus::Invalid) << testCase.name;
+        EXPECT_GE(result.errors.size(), 2U) << testCase.name;
+    }
 }
 
 TEST_F(XmlValidatorTest, ReturnsInvalidForMalformedXml) {
