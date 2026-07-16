@@ -3,6 +3,7 @@ find_package(GTest REQUIRED)
 add_executable(SimpleXmlValidatorTests
         core/validation/InputValidatorTest.cpp
         core/validation/XmlValidatorTest.cpp
+        infrastructure/logging/LoggerTest.cpp
         infrastructure/xerces/XercesStringTest.cpp
         infrastructure/xerces/XercesErrorHandlerTest.cpp
         infrastructure/xerces/XercesSchemaValidatorTest.cpp

@@ -1,6 +1,7 @@
 #include "../../infrastructure/xerces/XercesTestFixture.h"
 
 #include "core/validation/XmlValidator.h"
+#include "infrastructure/logging/Logger.h"
 
 #include <gtest/gtest.h>
 
@@ -9,8 +10,11 @@
 #include <filesystem>
 #include <fstream>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
+
+namespace logging_ns = simple_xml_validator::infrastructure::logging;
 
 namespace {
 
@@ -45,6 +49,28 @@ protected:
         ASSERT_TRUE(output.is_open());
         output << content;
         ASSERT_TRUE(output.good());
+    }
+
+    static std::string readFile(const std::filesystem::path& path) {
+        std::ifstream input(path, std::ios::binary);
+        EXPECT_TRUE(input.is_open());
+        std::ostringstream output;
+        output << input.rdbuf();
+        return output.str();
+    }
+
+    static void expectEquivalentResult(
+        const ValidationResult& expected,
+        const ValidationResult& actual) {
+        EXPECT_EQ(actual.status, expected.status);
+        EXPECT_EQ(actual.message, expected.message);
+        ASSERT_EQ(actual.errors.size(), expected.errors.size());
+        for (std::size_t index = 0; index < expected.errors.size(); ++index) {
+            EXPECT_EQ(actual.errors[index].severity, expected.errors[index].severity);
+            EXPECT_EQ(actual.errors[index].line, expected.errors[index].line);
+            EXPECT_EQ(actual.errors[index].column, expected.errors[index].column);
+            EXPECT_EQ(actual.errors[index].message, expected.errors[index].message);
+        }
     }
 
     std::filesystem::path fixturePath(const std::filesystem::path& relativePath) const {
@@ -260,6 +286,76 @@ TEST_F(XmlValidatorTest, ReturnsFailedForMissingInput) {
     EXPECT_EQ(result.status, ValidationStatus::Failed);
     EXPECT_TRUE(result.errors.empty());
     EXPECT_NE(result.message.find("XML 输入检查失败"), std::string::npos);
+}
+
+TEST_F(XmlValidatorTest, LogsValidResultToBothChannels) {
+    const auto logDirectory = temporaryDirectory_ / "logs";
+    logging_ns::LogConfig config;
+    config.directory = logDirectory;
+    logging_ns::LogManager logManager(config);
+    XmlValidator validator(runtime(), &logManager);
+
+    const ValidationResult result = validator.validate(
+        fixturePath("tests/xml/valid/A2_valid_simple_ok.xml"),
+        fixturePath("tests/xsd/setting_check.xsd"));
+
+    ASSERT_EQ(result.status, ValidationStatus::Valid);
+    const std::string systemContent = readFile(logDirectory / config.systemLogFileName);
+    const std::string validationContent =
+        readFile(logDirectory / config.validationLogFileName);
+    EXPECT_NE(systemContent.find("开始校验"), std::string::npos);
+    EXPECT_NE(systemContent.find("校验结束，状态=Valid，错误数量=0"), std::string::npos);
+    EXPECT_NE(validationContent.find("校验状态: Valid"), std::string::npos);
+    EXPECT_NE(validationContent.find("错误数量: 0"), std::string::npos);
+    EXPECT_NE(validationContent.find("A2_valid_simple_ok.xml"), std::string::npos);
+}
+
+TEST_F(XmlValidatorTest, LogsInvalidResultDetailsOnlyToValidationChannel) {
+    const auto logDirectory = temporaryDirectory_ / "logs";
+    logging_ns::LogConfig config;
+    config.directory = logDirectory;
+    logging_ns::LogManager logManager(config);
+    XmlValidator validator(runtime(), &logManager);
+
+    const ValidationResult result = validator.validate(
+        fixturePath("tests/xml/invalid/A2_missing_appname_attr.xml"),
+        fixturePath("tests/xsd/setting_check.xsd"));
+
+    ASSERT_EQ(result.status, ValidationStatus::Invalid);
+    ASSERT_FALSE(result.errors.empty());
+    const std::string systemContent = readFile(logDirectory / config.systemLogFileName);
+    const std::string validationContent =
+        readFile(logDirectory / config.validationLogFileName);
+    EXPECT_NE(systemContent.find("校验结束，状态=Invalid"), std::string::npos);
+    EXPECT_EQ(systemContent.find(result.errors.front().message), std::string::npos);
+    EXPECT_NE(validationContent.find("校验状态: Invalid"), std::string::npos);
+    EXPECT_NE(validationContent.find(result.errors.front().message), std::string::npos);
+}
+
+TEST_F(XmlValidatorTest, KeepsValidationResultWhenLoggingIsUnavailable) {
+    logging_ns::LogConfig disabledConfig;
+    const auto blockingPath = temporaryDirectory_ / "not-a-log-directory";
+    writeFile(blockingPath, "content");
+    disabledConfig.directory = blockingPath / "child";
+    logging_ns::LogManager disabledLogger(disabledConfig);
+
+    XmlValidator baselineValidator(runtime());
+    XmlValidator loggedValidator(runtime(), &disabledLogger);
+    const std::pair<std::filesystem::path, std::filesystem::path> cases[] = {
+        {fixturePath("tests/xml/valid/A2_valid_simple_ok.xml"),
+         fixturePath("tests/xsd/setting_check.xsd")},
+        {fixturePath("tests/xml/invalid/A2_missing_appname_attr.xml"),
+         fixturePath("tests/xsd/setting_check.xsd")},
+        {temporaryDirectory_ / "missing.xml", fixturePath("tests/xsd/setting_check.xsd")},
+    };
+
+    for (const auto& testCase : cases) {
+        const ValidationResult baselineResult =
+            baselineValidator.validate(testCase.first, testCase.second);
+        const ValidationResult loggedResult =
+            loggedValidator.validate(testCase.first, testCase.second);
+        expectEquivalentResult(baselineResult, loggedResult);
+    }
 }
 
 }

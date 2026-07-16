@@ -38,7 +38,6 @@ endif ()
 
 find_package(XercesC REQUIRED)
 find_package(spdlog REQUIRED)
-find_package(fmt REQUIRED)
 
 find_package(Qt5 COMPONENTS
         Core
@@ -56,12 +55,15 @@ add_library(SimpleXmlValidatorCore STATIC
         src/infrastructure/xerces/XercesErrorHandler.cpp
         src/infrastructure/xerces/LocalResourceResolver.cpp
         src/infrastructure/xerces/XercesSchemaValidator.cpp
+        src/infrastructure/logging/Logger.cpp
+        src/infrastructure/logging/ValidationLog.cpp
 )
 target_include_directories(SimpleXmlValidatorCore PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_link_libraries(SimpleXmlValidatorCore PRIVATE
         XercesC::XercesC
+        spdlog::spdlog
 )
 target_link_libraries(SimpleXmlValidatorCore PUBLIC
         SimpleXmlValidatorSanitizers
