@@ -3,10 +3,12 @@ find_package(GTest REQUIRED)
 add_executable(SimpleXmlValidatorTests
         core/validation/InputValidatorTest.cpp
         core/validation/XmlValidatorTest.cpp
+        gui/ValidationResultPresenterTest.cpp
         infrastructure/logging/LoggerTest.cpp
         infrastructure/xerces/XercesStringTest.cpp
         infrastructure/xerces/XercesErrorHandlerTest.cpp
         infrastructure/xerces/XercesSchemaValidatorTest.cpp
+        ${CMAKE_SOURCE_DIR}/src/gui/ValidationResultPresenter.cpp
 )
 
 target_link_libraries(SimpleXmlValidatorTests PRIVATE

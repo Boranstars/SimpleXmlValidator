@@ -69,7 +69,11 @@ target_link_libraries(SimpleXmlValidatorCore PUBLIC
         SimpleXmlValidatorSanitizers
 )
 
-add_executable(SimpleXmlValidator main.cpp)
+add_executable(SimpleXmlValidator
+        main.cpp
+        src/gui/MainWindow.cpp
+        src/gui/ValidationResultPresenter.cpp
+)
 target_link_libraries(SimpleXmlValidator
         Qt5::Core
         Qt5::Gui

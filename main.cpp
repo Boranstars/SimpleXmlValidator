@@ -1,14 +1,15 @@
+#include "gui/MainWindow.h"
 #include "infrastructure/logging/Logger.h"
 #include "infrastructure/xerces/XercesRuntime.h"
 
 #include <QApplication>
-#include <QPushButton>
 
 #include <filesystem>
 #include <string>
 
 namespace logging_ns = simple_xml_validator::infrastructure::logging;
 namespace xerces_ns  = simple_xml_validator::infrastructure::xerces;
+namespace gui_ns     = simple_xml_validator::gui;
 
 int main(int argc, char *argv[]) {
     // 组合根：先建立日志运行环境，并在整个应用生命周期内保持可用。
@@ -31,9 +32,9 @@ int main(int argc, char *argv[]) {
     }
 
     QApplication a(argc, argv);
-    QPushButton button("Hello world!", nullptr);
-    button.resize(200, 100);
-    button.show();
+    gui_ns::MainWindow window(runtime, &logManager);
+    window.resize(720, 560);
+    window.show();
     const int code = QApplication::exec();
 
     // 组合根作用域即将结束，XercesRuntime 随后析构并释放 Xerces。
