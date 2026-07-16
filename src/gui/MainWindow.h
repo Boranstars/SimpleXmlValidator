@@ -26,6 +26,9 @@ class XercesRuntime;
 
 namespace simple_xml_validator::gui {
 
+class CodeEditor;
+class XmlSyntaxHighlighter;
+
 // 主窗口：对齐 docs/ui_raw/概念设计图.jpg 的最小实现——工具栏、文件列表、
 // 输入配置、状态卡片（状态/错误数/警告数/耗时）、结果多标签（校验结果/XML 预览/
 // 错误日志/统计信息）与错误详情面板。GUI 不直接包含或调用 Xerces/spdlog；
@@ -91,21 +94,24 @@ private:
     QLabel* elapsedValueLabel_      = nullptr;
 
     // 结果区提示条与多标签。
-    QLabel*         bannerLabel_     = nullptr;
-    QLabel*         errorCountLabel_ = nullptr;
-    QTableWidget*   errorTable_      = nullptr;
-    QTabWidget*     resultTabs_      = nullptr;
-    QPlainTextEdit* xmlPreview_      = nullptr;
-    QPlainTextEdit* logView_         = nullptr;
-    QLabel*         statsLabel_      = nullptr;
+    QLabel*       bannerLabel_     = nullptr;
+    QLabel*       errorCountLabel_ = nullptr;
+    QTableWidget* errorTable_      = nullptr;
+    QTabWidget*   resultTabs_      = nullptr;
+    CodeEditor*   xmlPreview_      = nullptr;
+    QPlainTextEdit* logView_       = nullptr;
+    QLabel*       statsLabel_      = nullptr;
 
     // 右侧错误详情面板。
-    QLabel*         detailLevelLabel_   = nullptr;
-    QLabel*         detailFileLabel_    = nullptr;
-    QLabel*         detailLineLabel_    = nullptr;
-    QLabel*         detailColumnLabel_  = nullptr;
-    QPlainTextEdit* detailMessageEdit_  = nullptr;
-    QPlainTextEdit* contextEdit_        = nullptr;
+    QLabel*     detailLevelLabel_   = nullptr;
+    QLabel*     detailFileLabel_    = nullptr;
+    QLabel*     detailLineLabel_    = nullptr;
+    QLabel*     detailColumnLabel_  = nullptr;
+    QPlainTextEdit* detailMessageEdit_ = nullptr;
+    CodeEditor* contextEdit_        = nullptr;
+
+    XmlSyntaxHighlighter* previewHighlighter_ = nullptr;
+    XmlSyntaxHighlighter* contextHighlighter_ = nullptr;
 };
 
 }  // namespace simple_xml_validator::gui

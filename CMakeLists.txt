@@ -73,6 +73,9 @@ add_executable(SimpleXmlValidator
         main.cpp
         src/gui/MainWindow.cpp
         src/gui/ValidationResultPresenter.cpp
+        src/gui/Style.cpp
+        src/gui/XmlSyntaxHighlighter.cpp
+        src/gui/CodeEditor.cpp
 )
 target_link_libraries(SimpleXmlValidator
         Qt5::Core

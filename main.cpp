@@ -1,4 +1,5 @@
 #include "gui/MainWindow.h"
+#include "gui/Style.h"
 #include "infrastructure/logging/Logger.h"
 #include "infrastructure/xerces/XercesRuntime.h"
 
@@ -32,6 +33,7 @@ int main(int argc, char *argv[]) {
     }
 
     QApplication a(argc, argv);
+    a.setStyleSheet(gui_ns::applicationStyleSheet());
     gui_ns::MainWindow window(runtime, &logManager);
     window.resize(1180, 720);
     window.show();

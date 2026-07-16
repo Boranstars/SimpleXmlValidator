@@ -1,13 +1,17 @@
 #include "gui/MainWindow.h"
 
+#include "gui/CodeEditor.h"
+#include "gui/XmlSyntaxHighlighter.h"
 #include "infrastructure/xerces/XercesRuntime.h"
 
 #include <QAction>
+#include <QColor>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFileDialog>
 #include <QFont>
 #include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -98,10 +102,17 @@ std::vector<std::string> readLines(const std::filesystem::path& path) {
 // 创建一个状态卡片（标题 + 数值）。返回卡片框，并通过 valueOut 输出数值标签。
 QFrame* makeCard(const QString& title, QLabel** valueOut, QWidget* parent) {
     auto* card = new QFrame(parent);
-    card->setFrameShape(QFrame::StyledPanel);
+    card->setObjectName("card");
+    card->setFrameShape(QFrame::NoFrame);
+    // 柔和投影：QSS 不支持 box-shadow，改用图形效果实现。
+    auto* shadow = new QGraphicsDropShadowEffect(card);
+    shadow->setBlurRadius(18);
+    shadow->setOffset(0, 2);
+    shadow->setColor(QColor(0, 0, 0, 38));
+    card->setGraphicsEffect(shadow);
     auto* layout    = new QVBoxLayout(card);
     auto* titleText = new QLabel(title, card);
-    titleText->setStyleSheet("color: #666;");
+    titleText->setStyleSheet("color: #6b7280;");
     auto* valueText = new QLabel("-", card);
     QFont valueFont = valueText->font();
     valueFont.setPointSize(valueFont.pointSize() + 4);
@@ -193,6 +204,7 @@ void MainWindow::setupUi() {
     xsdPathEdit_->installEventFilter(this);
     selectXsdButton_ = new QPushButton("浏览…", inputGroup);
     validateButton_  = new QPushButton("开始校验", inputGroup);
+    validateButton_->setObjectName("primaryButton");
     resetButton_     = new QPushButton("清空", inputGroup);
     inputLayout->addWidget(new QLabel("XML 文件路径：", inputGroup), 0, 0);
     inputLayout->addWidget(xmlPathEdit_, 0, 1);
@@ -236,10 +248,9 @@ void MainWindow::setupUi() {
     resultLayout->addWidget(errorTable_, 1);
     resultTabs_->addTab(resultTab, "校验结果");
 
-    // XML 预览标签。
-    xmlPreview_ = new QPlainTextEdit(resultTabs_);
-    xmlPreview_->setReadOnly(true);
-    xmlPreview_->setLineWrapMode(QPlainTextEdit::NoWrap);
+    // XML 预览标签（带行号与语法高亮）。
+    xmlPreview_ = new CodeEditor(resultTabs_);
+    previewHighlighter_ = new XmlSyntaxHighlighter(xmlPreview_->document());
     resultTabs_->addTab(xmlPreview_, "XML预览");
 
     // 错误日志标签（本次校验结果的文本化列表）。
@@ -275,9 +286,8 @@ void MainWindow::setupUi() {
     detailMessageEdit_->setMaximumHeight(90);
     rightLayout->addWidget(detailMessageEdit_);
     rightLayout->addWidget(new QLabel("上下文：", rightPanel));
-    contextEdit_ = new QPlainTextEdit(rightPanel);
-    contextEdit_->setReadOnly(true);
-    contextEdit_->setLineWrapMode(QPlainTextEdit::NoWrap);
+    contextEdit_ = new CodeEditor(rightPanel);
+    contextHighlighter_ = new XmlSyntaxHighlighter(contextEdit_->document());
     rightLayout->addWidget(contextEdit_, 1);
     splitter->addWidget(rightPanel);
 
@@ -608,9 +618,11 @@ void MainWindow::updateErrorDetail(int row) {
     detailColumnLabel_->setText(QString("列：%1").arg(QString::fromStdString(error.column)));
     detailMessageEdit_->setPlainText(QString::fromStdString(error.message));
 
-    // 上下文：读取 XML 源，显示出错行附近数行并标记该行。只读展示，不提供跳转。
+    // 上下文：读取 XML 源，显示出错行附近数行并高亮该行。只读展示，不提供跳转。
     contextEdit_->clear();
-    bool ok      = false;
+    contextEdit_->setFirstLineNumber(1);
+    contextEdit_->setHighlightLine(-1);
+    bool      ok     = false;
     const int lineNo = QString::fromStdString(error.line).toInt(&ok);
     if (!ok || lineNo <= 0 || xmlPath_.empty()) {
         return;
@@ -624,11 +636,14 @@ void MainWindow::updateErrorDetail(int row) {
     const int to    = std::min(total, lineNo + 3);
     QString   context;
     for (int i = from; i <= to; ++i) {
-        const QString marker = (i == lineNo) ? "▶ " : "  ";
-        context += marker + QString::number(i) + " | " +
-                   QString::fromStdString(lines[static_cast<std::size_t>(i - 1)]) + '\n';
+        context += QString::fromStdString(lines[static_cast<std::size_t>(i - 1)]);
+        if (i < to) {
+            context += '\n';
+        }
     }
+    contextEdit_->setFirstLineNumber(from);
     contextEdit_->setPlainText(context);
+    contextEdit_->setHighlightLine(lineNo);
 }
 
 }  // namespace simple_xml_validator::gui
