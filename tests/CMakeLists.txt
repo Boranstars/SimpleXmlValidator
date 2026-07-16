@@ -1,4 +1,4 @@
-find_package(GTest REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 add_executable(SimpleXmlValidatorTests
         core/validation/InputValidatorTest.cpp

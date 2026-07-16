@@ -1,0 +1,50 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "base-vcpkg",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "BUILD_TESTING": "ON"
+      }
+    },
+    {
+      "name": "windows-vcpkg",
+      "displayName": "Windows x64 (vcpkg)",
+      "inherits": "base-vcpkg",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/out/build/windows-vcpkg"
+    },
+    {
+      "name": "linux-vcpkg",
+      "displayName": "Linux x64 (vcpkg)",
+      "inherits": "base-vcpkg",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/linux-vcpkg"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-vcpkg-debug",
+      "configurePreset": "windows-vcpkg",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-vcpkg-debug",
+      "configurePreset": "linux-vcpkg"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-vcpkg-debug",
+      "configurePreset": "windows-vcpkg",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-vcpkg-debug",
+      "configurePreset": "linux-vcpkg"
+    }
+  ]
+}

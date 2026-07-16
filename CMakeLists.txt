@@ -36,8 +36,8 @@ if (SIMPLE_XML_VALIDATOR_ENABLE_ASAN OR SIMPLE_XML_VALIDATOR_ENABLE_UBSAN)
     endif ()
 endif ()
 
-find_package(XercesC REQUIRED)
-find_package(spdlog REQUIRED)
+find_package(XercesC CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 find_package(Qt5 COMPONENTS
         Core
@@ -90,31 +90,22 @@ if (BUILD_TESTING)
 endif ()
 
 # Copy Qt DLLs for Windows
-if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(DEBUG_SUFFIX)
-    if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
-        set(DEBUG_SUFFIX "d")
-    endif ()
-    set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
-    if (NOT EXISTS "${QT_INSTALL_PATH}/bin")
-        set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        if (NOT EXISTS "${QT_INSTALL_PATH}/bin")
-            set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        endif ()
-    endif ()
-    if (EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
+if (WIN32)
+    get_filename_component(QT_INSTALL_PATH "${Qt5Core_DIR}" DIRECTORY)
+    get_filename_component(QT_INSTALL_PATH "${QT_INSTALL_PATH}" DIRECTORY)
+    get_filename_component(QT_INSTALL_PATH "${QT_INSTALL_PATH}" DIRECTORY)
+
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<IF:$<CONFIG:Debug>,${QT_INSTALL_PATH}/plugins/platforms/qwindowsd.dll,${QT_INSTALL_PATH}/plugins/platforms/qwindows.dll>"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
+    foreach (QT_LIB Core Gui Widgets)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-    endif ()
-    foreach (QT_LIB Core Gui Widgets Test)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/bin/Qt5${QT_LIB}${DEBUG_SUFFIX}.dll"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:Qt5::${QT_LIB}>"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach (QT_LIB)
 endif ()
