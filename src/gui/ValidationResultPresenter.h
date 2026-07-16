@@ -64,9 +64,10 @@ struct PresentedResult {
 // 不依赖 Xerces；便于 GTest 独立验证映射规则。
 class ValidationResultPresenter {
 public:
-    // 单次展示的最大错误“类别”行数（合并后）。避免大量诊断无界渲染导致界面
-    // 卡顿；完整诊断仍由 ValidationResult 与日志保留。
-    static constexpr std::size_t kMaxErrorRows = 200;
+    // 合并后错误“类别”行数的安全上限。视图对错误表格采用分页展示，正常文件
+    // （数千类）可完整分页浏览；此上限仅为防御极端病态输入导致的内存膨胀，
+    // 触发时 truncated 置真，完整明细仍由 ValidationResult 与日志保留。
+    static constexpr std::size_t kMaxErrorRows = 50000;
 
     // 初始状态或重新选择文件后的空展示状态。
     [[nodiscard]] PresentedResult initial() const;

@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QColor>
+#include <QComboBox>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFileDialog>
@@ -246,6 +247,23 @@ void MainWindow::setupUi() {
     resultLayout->addWidget(bannerLabel_);
     resultLayout->addWidget(errorCountLabel_);
     resultLayout->addWidget(errorTable_, 1);
+
+    // 分页栏：每页行数选择 + 上/下一页 + 页码信息。
+    auto* pagerRow = new QHBoxLayout();
+    pagerRow->addWidget(new QLabel("每页", resultTab));
+    pageSizeCombo_ = new QComboBox(resultTab);
+    pageSizeCombo_->addItems(QStringList{"50", "100", "200", "500"});
+    pageSizeCombo_->setCurrentText(QString::number(pageSize_));
+    pagerRow->addWidget(pageSizeCombo_);
+    pagerRow->addWidget(new QLabel("行", resultTab));
+    pagerRow->addStretch(1);
+    prevPageButton_ = new QPushButton("上一页", resultTab);
+    nextPageButton_ = new QPushButton("下一页", resultTab);
+    pageInfoLabel_  = new QLabel(resultTab);
+    pagerRow->addWidget(prevPageButton_);
+    pagerRow->addWidget(pageInfoLabel_);
+    pagerRow->addWidget(nextPageButton_);
+    resultLayout->addLayout(pagerRow);
     resultTabs_->addTab(resultTab, "校验结果");
 
     // XML 预览标签（带行号与语法高亮）。
@@ -306,6 +324,10 @@ void MainWindow::setupUi() {
     connect(resetButton_, &QPushButton::clicked, this, &MainWindow::onReset);
     connect(errorTable_, &QTableWidget::itemSelectionChanged, this,
             &MainWindow::onErrorSelectionChanged);
+    connect(prevPageButton_, &QPushButton::clicked, this, &MainWindow::onPrevPage);
+    connect(nextPageButton_, &QPushButton::clicked, this, &MainWindow::onNextPage);
+    connect(pageSizeCombo_, &QComboBox::currentTextChanged, this,
+            &MainWindow::onPageSizeChanged);
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
@@ -503,7 +525,7 @@ void MainWindow::applyPresented(const PresentedResult& presented, double elapsed
     elapsedValueLabel_->setText(
         hasResult ? QString("%1 ms").arg(elapsedMilliseconds, 0, 'f', 1) : QString("-"));
 
-    // 错误数量说明与表格。
+    // 错误数量说明与表格（分页展示）。
     if (presented.showErrorTable) {
         const std::size_t groupCount = presented.errorRows.size();
         QString countText = QString("错误数量：%1  警告数量：%2")
@@ -514,37 +536,25 @@ void MainWindow::applyPresented(const PresentedResult& presented, double elapsed
                              .arg(static_cast<qulonglong>(groupCount));
         }
         if (presented.truncated) {
-            countText += QString("（仅显示前 %1 类，完整明细见日志）")
+            countText += QString("（已达展示上限 %1 类，其余见日志）")
                              .arg(static_cast<qulonglong>(groupCount));
         }
         errorCountLabel_->setText(countText);
         errorCountLabel_->show();
 
-        const QString fileName = qStringFromPath(xmlPath_.filename());
-        errorTable_->setRowCount(static_cast<int>(groupCount));
-        for (int row = 0; row < static_cast<int>(groupCount); ++row) {
-            const PresentedError& error = presented.errorRows[static_cast<std::size_t>(row)];
-            QString description = QString::fromStdString(error.message);
-            if (error.occurrences > 1) {
-                description += QString("（共 %1 处）")
-                                   .arg(static_cast<qulonglong>(error.occurrences));
-            }
-            errorTable_->setItem(
-                row, 0, new QTableWidgetItem(QString::fromStdString(error.severity)));
-            errorTable_->setItem(row, 1, new QTableWidgetItem(fileName));
-            errorTable_->setItem(
-                row, 2, new QTableWidgetItem(QString::fromStdString(error.line)));
-            errorTable_->setItem(
-                row, 3, new QTableWidgetItem(QString::fromStdString(error.column)));
-            errorTable_->setItem(row, 4, new QTableWidgetItem(description));
-        }
-        errorTable_->show();
+        currentPage_ = 0;
+        renderErrorPage();
+        pageSizeCombo_->setEnabled(true);
     } else {
         errorCountLabel_->hide();
         errorCountLabel_->clear();
         errorTable_->clearContents();
         errorTable_->setRowCount(0);
         errorTable_->show();
+        pageInfoLabel_->clear();
+        prevPageButton_->setEnabled(false);
+        nextPageButton_->setEnabled(false);
+        pageSizeCombo_->setEnabled(false);
     }
 
     // 错误日志文本视图（本次校验结果文本化）。
@@ -595,11 +605,84 @@ void MainWindow::applyPresented(const PresentedResult& presented, double elapsed
 }
 
 void MainWindow::onErrorSelectionChanged() {
-    updateErrorDetail(errorTable_->currentRow());
+    const int row = errorTable_->currentRow();
+    if (row < 0) {
+        updateErrorDetail(-1);
+        return;
+    }
+    // 表格仅渲染当前页，需换算为合并后错误列表中的绝对下标。
+    updateErrorDetail(currentPage_ * pageSize_ + row);
 }
 
-void MainWindow::updateErrorDetail(int row) {
-    if (row < 0 || row >= static_cast<int>(presented_.errorRows.size())) {
+void MainWindow::renderErrorPage() {
+    const int total     = static_cast<int>(presented_.errorRows.size());
+    const int pageCount = total == 0 ? 1 : (total + pageSize_ - 1) / pageSize_;
+    if (currentPage_ >= pageCount) {
+        currentPage_ = pageCount - 1;
+    }
+    if (currentPage_ < 0) {
+        currentPage_ = 0;
+    }
+    const int start = currentPage_ * pageSize_;
+    const int end   = std::min(start + pageSize_, total);
+
+    const QString fileName = qStringFromPath(xmlPath_.filename());
+    errorTable_->clearContents();
+    errorTable_->setRowCount(std::max(0, end - start));
+    for (int i = start; i < end; ++i) {
+        const PresentedError& error = presented_.errorRows[static_cast<std::size_t>(i)];
+        QString description = QString::fromStdString(error.message);
+        if (error.occurrences > 1) {
+            description +=
+                QString("（共 %1 处）").arg(static_cast<qulonglong>(error.occurrences));
+        }
+        const int row = i - start;
+        errorTable_->setItem(
+            row, 0, new QTableWidgetItem(QString::fromStdString(error.severity)));
+        errorTable_->setItem(row, 1, new QTableWidgetItem(fileName));
+        errorTable_->setItem(
+            row, 2, new QTableWidgetItem(QString::fromStdString(error.line)));
+        errorTable_->setItem(
+            row, 3, new QTableWidgetItem(QString::fromStdString(error.column)));
+        errorTable_->setItem(row, 4, new QTableWidgetItem(description));
+    }
+    errorTable_->show();
+
+    pageInfoLabel_->setText(QString("第 %1 / %2 页（共 %3 类）")
+                                .arg(currentPage_ + 1)
+                                .arg(pageCount)
+                                .arg(total));
+    prevPageButton_->setEnabled(currentPage_ > 0);
+    nextPageButton_->setEnabled(currentPage_ < pageCount - 1);
+    // 翻页后清空详情面板，避免残留上一页的选择。
+    updateErrorDetail(-1);
+}
+
+void MainWindow::onPrevPage() {
+    if (currentPage_ > 0) {
+        --currentPage_;
+        renderErrorPage();
+    }
+}
+
+void MainWindow::onNextPage() {
+    ++currentPage_;
+    renderErrorPage();
+}
+
+void MainWindow::onPageSizeChanged() {
+    const int size = pageSizeCombo_->currentText().toInt();
+    if (size > 0) {
+        pageSize_    = size;
+        currentPage_ = 0;
+        if (presented_.showErrorTable) {
+            renderErrorPage();
+        }
+    }
+}
+
+void MainWindow::updateErrorDetail(int absoluteIndex) {
+    if (absoluteIndex < 0 || absoluteIndex >= static_cast<int>(presented_.errorRows.size())) {
         detailLevelLabel_->setText("级别：-");
         detailFileLabel_->setText("文件：-");
         detailLineLabel_->setText("行：-");
@@ -609,7 +692,7 @@ void MainWindow::updateErrorDetail(int row) {
         return;
     }
 
-    const PresentedError& error = presented_.errorRows[static_cast<std::size_t>(row)];
+    const PresentedError& error = presented_.errorRows[static_cast<std::size_t>(absoluteIndex)];
     detailLevelLabel_->setText(
         QString("级别：%1").arg(QString::fromStdString(error.severity)));
     detailFileLabel_->setText(

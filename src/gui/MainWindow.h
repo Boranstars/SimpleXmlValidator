@@ -10,6 +10,7 @@
 #include <filesystem>
 
 class QAction;
+class QComboBox;
 class QEvent;
 class QLabel;
 class QLineEdit;
@@ -55,6 +56,9 @@ private:
     void onValidate();
     void onReset();
     void onErrorSelectionChanged();
+    void onPrevPage();
+    void onNextPage();
+    void onPageSizeChanged();
 
     void setXmlPath(const std::filesystem::path& path);
     void setXsdPath(const std::filesystem::path& path);
@@ -63,7 +67,8 @@ private:
     void applyPresented(const PresentedResult& presented, double elapsedMilliseconds);
     void refreshFileList();
     void loadXmlPreview();
-    void updateErrorDetail(int row);
+    void renderErrorPage();
+    void updateErrorDetail(int absoluteIndex);
 
     infrastructure::logging::LogModule guiLog_;
     XmlValidator                       validator_;
@@ -97,10 +102,17 @@ private:
     QLabel*       bannerLabel_     = nullptr;
     QLabel*       errorCountLabel_ = nullptr;
     QTableWidget* errorTable_      = nullptr;
+    QComboBox*    pageSizeCombo_   = nullptr;
+    QPushButton*  prevPageButton_  = nullptr;
+    QPushButton*  nextPageButton_  = nullptr;
+    QLabel*       pageInfoLabel_   = nullptr;
     QTabWidget*   resultTabs_      = nullptr;
     CodeEditor*   xmlPreview_      = nullptr;
     QPlainTextEdit* logView_       = nullptr;
     QLabel*       statsLabel_      = nullptr;
+
+    int currentPage_ = 0;
+    int pageSize_    = 100;
 
     // 右侧错误详情面板。
     QLabel*     detailLevelLabel_   = nullptr;

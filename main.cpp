@@ -16,6 +16,10 @@ int main(int argc, char *argv[]) {
     // 组合根：先建立日志运行环境，并在整个应用生命周期内保持可用。
     logging_ns::LogConfig logConfig;
     logConfig.directory = std::filesystem::path("logs");
+    // 启用滚动日志：单文件超过上限即滚动，保留有限历史，避免日志无界增长。
+    logConfig.rotating         = true;
+    logConfig.maxFileSizeBytes = 5 * 1024 * 1024;  // 单文件 5 MiB
+    logConfig.maxFiles         = 5;                 // 保留 5 个历史文件
 
     logging_ns::LogManager logManager(logConfig);
 
