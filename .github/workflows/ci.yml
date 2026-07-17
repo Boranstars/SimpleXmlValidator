@@ -43,7 +43,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Qt 5.15.2
+      # Qt 5.15.2 has no official ARM64 macOS binaries in the Qt online installer.
+      # Use Homebrew on macOS (native ARM64 bottle); use the Qt installer on Linux/Windows.
+      - name: Install Qt (Linux / Windows)
+        if: runner.os != 'macOS'
         uses: jurplel/install-qt-action@v4
         with:
           version: '5.15.2'
@@ -53,12 +56,33 @@ jobs:
           cache: true
           cache-key-prefix: qt-5.15.2
 
+      - name: Setup Homebrew paths
+        if: runner.os == 'macOS'
+        id: brew-paths
+        run: echo "cellar=$(brew --prefix)/Cellar/qt@5" >> $GITHUB_OUTPUT
+
+      - name: Cache Homebrew Qt5
+        if: runner.os == 'macOS'
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.brew-paths.outputs.cellar }}
+          key: brew-qt5-${{ runner.os }}-${{ runner.arch }}-v1
+
+      - name: Install Qt (macOS via Homebrew)
+        if: runner.os == 'macOS'
+        run: brew install qt@5
+
       - name: Export VCPKG_ROOT and QT_ROOT
         shell: bash
         run: |
           echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
-          echo "QT_ROOT=$Qt5_DIR" >> "$GITHUB_ENV"
-          # Use a workspace-relative path so actions/cache@v4 can find it cross-platform
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            QT_PREFIX="$(brew --prefix qt@5)"
+            echo "QT_ROOT=$QT_PREFIX" >> "$GITHUB_ENV"
+            echo "$QT_PREFIX/bin" >> "$GITHUB_PATH"
+          else
+            echo "QT_ROOT=$Qt5_DIR" >> "$GITHUB_ENV"
+          fi
           echo "VCPKG_DEFAULT_BINARY_CACHE=${{ github.workspace }}/vcpkg-bincache" >> "$GITHUB_ENV"
 
       - name: Cache vcpkg binary packages
@@ -67,6 +91,7 @@ jobs:
           path: ${{ github.workspace }}/vcpkg-bincache
           key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: vcpkg-${{ runner.os }}-
+          save-always: true
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
