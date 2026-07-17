@@ -85,13 +85,13 @@ jobs:
           fi
           echo "VCPKG_DEFAULT_BINARY_CACHE=${{ github.workspace }}/vcpkg-bincache" >> "$GITHUB_ENV"
 
-      - name: Cache vcpkg binary packages
-        uses: actions/cache@v4
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v4
+        id: vcpkg-cache
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
           key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: vcpkg-${{ runner.os }}-
-          save-always: true
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
@@ -115,6 +115,13 @@ jobs:
       - name: Test (Windows / macOS)
         if: runner.os != 'Linux'
         run: ctest --preset ${{ matrix.test-preset }}
+
+      - name: Save vcpkg binary cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
 
       # ── Packaging ──────────────────────────────────────────────────────────
 
