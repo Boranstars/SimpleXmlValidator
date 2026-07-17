@@ -179,7 +179,6 @@ jobs:
           DESKTOP
 
           convert -size 256x256 xc:'#336699' \
-                  -fill white -gravity Center -pointsize 48 -annotate 0 'XML' \
                   AppDir/usr/share/icons/hicolor/256x256/apps/SimpleXmlValidator.png
 
           QMAKE="$(which qmake)" \
