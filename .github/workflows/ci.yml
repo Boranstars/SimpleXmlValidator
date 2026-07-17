@@ -159,7 +159,38 @@ jobs:
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
-        run: cp out/build/linux-vcpkg/SimpleXmlValidator SimpleXmlValidator-linux
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+               -O linuxdeploy
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage \
+               -O linuxdeploy-plugin-qt
+          chmod +x linuxdeploy linuxdeploy-plugin-qt
+
+          mkdir -p AppDir/usr/share/applications \
+                   AppDir/usr/share/icons/hicolor/256x256/apps
+
+          cat > AppDir/usr/share/applications/SimpleXmlValidator.desktop << 'DESKTOP'
+          [Desktop Entry]
+          Name=SimpleXmlValidator
+          Exec=SimpleXmlValidator
+          Icon=SimpleXmlValidator
+          Type=Application
+          Categories=Development;Utility;
+          DESKTOP
+
+          convert -size 256x256 xc:'#336699' \
+                  AppDir/usr/share/icons/hicolor/256x256/apps/SimpleXmlValidator.png
+
+          QMAKE="$(which qmake)" \
+          ./linuxdeploy \
+            --appdir AppDir \
+            --executable out/build/linux-vcpkg/SimpleXmlValidator \
+            --desktop-file AppDir/usr/share/applications/SimpleXmlValidator.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/SimpleXmlValidator.png \
+            --plugin qt \
+            --output appimage
+
+          mv SimpleXmlValidator*.AppImage SimpleXmlValidator-linux.AppImage
 
       # ── Upload artifacts ───────────────────────────────────────────────────
 
@@ -184,5 +215,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: SimpleXmlValidator-linux
+          path: SimpleXmlValidator-linux.AppImage
           if-no-files-found: error
