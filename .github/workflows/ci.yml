@@ -63,7 +63,8 @@ jobs:
 
       - name: Cache Homebrew Qt5
         if: runner.os == 'macOS'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
+        id: brew-qt-cache
         with:
           path: ${{ steps.brew-paths.outputs.cellar }}
           key: brew-qt5-${{ runner.os }}-${{ runner.arch }}-v1
@@ -122,6 +123,13 @@ jobs:
         with:
           path: ${{ github.workspace }}/vcpkg-bincache
           key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+
+      - name: Save Homebrew Qt5 cache
+        uses: actions/cache/save@v4
+        if: always() && runner.os == 'macOS'
+        with:
+          path: ${{ steps.brew-paths.outputs.cellar }}
+          key: ${{ steps.brew-qt-cache.outputs.cache-primary-key }}
 
       # ── Packaging ──────────────────────────────────────────────────────────
 
