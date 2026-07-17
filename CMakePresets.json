@@ -15,7 +15,10 @@
       "displayName": "Windows x64 (vcpkg)",
       "inherits": "base-vcpkg",
       "architecture": "x64",
-      "binaryDir": "${sourceDir}/out/build/windows-vcpkg"
+      "binaryDir": "${sourceDir}/out/build/windows-vcpkg",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
+      }
     },
     {
       "name": "linux-vcpkg",
