@@ -154,8 +154,8 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          macdeployqt out/build/macos-vcpkg/Release/SimpleXmlValidator.app -dmg
-          mv out/build/macos-vcpkg/Release/SimpleXmlValidator.dmg SimpleXmlValidator-macos.dmg
+          macdeployqt out/build/macos-vcpkg/SimpleXmlValidator.app -dmg
+          mv out/build/macos-vcpkg/SimpleXmlValidator.dmg SimpleXmlValidator-macos.dmg
 
       - name: Package (Linux)
         if: runner.os == 'Linux'
