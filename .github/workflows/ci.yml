@@ -74,7 +74,11 @@ jobs:
 
       - name: Install Qt (macOS via Homebrew)
         if: runner.os == 'macOS'
-        run: brew install qt@5
+        run: |
+          brew install qt@5
+          # After cache restore, Cellar exists but opt symlink may be missing.
+          # brew install reports "not linked" in that case — link explicitly.
+          brew link qt@5 2>/dev/null || brew link --force qt@5 2>/dev/null || true
 
       - name: Export VCPKG_ROOT and QT_ROOT
         shell: bash
