@@ -5,6 +5,7 @@ on:
     branches: [main, feat/ci-setup]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -59,14 +60,21 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
+      # Runner system env vars (VCPKG_INSTALLATION_ROOT, Qt5_DIR) are only accessible
+      # inside shell scripts, not via ${{ env.X }} in workflow YAML. Write them to
+      # GITHUB_ENV here so subsequent steps can reference them as ${{ env.X }}.
+      - name: Export VCPKG_ROOT and QT_ROOT
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+          echo "QT_ROOT=$Qt5_DIR" >> "$GITHUB_ENV"
+
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get install -y xvfb libgl1-mesa-dev
 
       - name: Configure CMake
         env:
-          VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
-          QT_ROOT: ${{ env.QT_ROOT_DIR }}
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         # CMAKE_BUILD_TYPE is needed for single-config generators (Linux/macOS Ninja).
         # MSVC ignores it but it is harmless there.
