@@ -53,32 +53,32 @@ jobs:
           cache: true
           cache-key-prefix: qt-5.15.2
 
-      - name: Export vcpkg GitHub Actions cache variables
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      # Runner system env vars (VCPKG_INSTALLATION_ROOT, Qt5_DIR) are only accessible
-      # inside shell scripts, not via ${{ env.X }} in workflow YAML. Write them to
-      # GITHUB_ENV here so subsequent steps can reference them as ${{ env.X }}.
       - name: Export VCPKG_ROOT and QT_ROOT
         shell: bash
         run: |
           echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
           echo "QT_ROOT=$Qt5_DIR" >> "$GITHUB_ENV"
+          # Use a workspace-relative path so actions/cache@v4 can find it cross-platform
+          echo "VCPKG_DEFAULT_BINARY_CACHE=${{ github.workspace }}/vcpkg-bincache" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-${{ runner.os }}-
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get install -y xvfb libgl1-mesa-dev
 
       - name: Configure CMake
+        shell: bash
         env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        # CMAKE_BUILD_TYPE is needed for single-config generators (Linux/macOS Ninja).
-        # MSVC ignores it but it is harmless there.
-        run: cmake --preset ${{ matrix.cmake-preset }} -DCMAKE_BUILD_TYPE=Release
+          VCPKG_BINARY_SOURCES: "clear;default,readwrite"
+        run: |
+          mkdir -p "${{ github.workspace }}/vcpkg-bincache"
+          cmake --preset ${{ matrix.cmake-preset }} -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build --preset ${{ matrix.build-preset }}
