@@ -22,6 +22,12 @@
       "displayName": "Linux x64 (vcpkg)",
       "inherits": "base-vcpkg",
       "binaryDir": "${sourceDir}/out/build/linux-vcpkg"
+    },
+    {
+      "name": "macos-vcpkg",
+      "displayName": "macOS (vcpkg)",
+      "inherits": "base-vcpkg",
+      "binaryDir": "${sourceDir}/out/build/macos-vcpkg"
     }
   ],
   "buildPresets": [
@@ -34,6 +40,21 @@
       "name": "linux-vcpkg-debug",
       "configurePreset": "linux-vcpkg",
       "configuration": "Debug"
+    },
+    {
+      "name": "windows-vcpkg-release",
+      "configurePreset": "windows-vcpkg",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-vcpkg-release",
+      "configurePreset": "linux-vcpkg",
+      "configuration": "Release"
+    },
+    {
+      "name": "macos-vcpkg-release",
+      "configurePreset": "macos-vcpkg",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
@@ -45,6 +66,24 @@
     {
       "name": "linux-vcpkg-debug",
       "configurePreset": "linux-vcpkg"
+    },
+    {
+      "name": "windows-vcpkg-release",
+      "configurePreset": "windows-vcpkg",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "linux-vcpkg-release",
+      "configurePreset": "linux-vcpkg",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "macos-vcpkg-release",
+      "configurePreset": "macos-vcpkg",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true }
     }
   ]
 }

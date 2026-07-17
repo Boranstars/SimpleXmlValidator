@@ -11,7 +11,7 @@
 
 ## 2. 技术基线
 
-- 使用 C++17、Qt 5.12.x（`Core`、`Gui`、`Widgets`）、CMake、Xerces-C++、spdlog 和 GTest。
+- 使用 C++17、Qt 5.15.x（`Core`、`Gui`、`Widgets`）、CMake、Xerces-C++、spdlog 和 GTest。
 - 保持跨平台兼容性，目标平台为 Windows 10/11 与 Linux x86_64。
 - 路径统一使用 `std::filesystem::path` 表达和处理；在进入校验流程前转换为绝对且词法规范化的路径（不解析符号链接），必须支持中文路径和含空格路径。
 - 通过 CMake 管理依赖，不要在代码中硬编码第三方库、Qt 安装目录或平台专属路径。
