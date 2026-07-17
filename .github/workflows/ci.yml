@@ -148,6 +148,7 @@ jobs:
           $pkg = "package\SimpleXmlValidator"
           New-Item -ItemType Directory -Force -Path $pkg | Out-Null
           Copy-Item "$buildDir\SimpleXmlValidator.exe" $pkg
+          Get-ChildItem "$buildDir\*.dll" | Select-Object -ExpandProperty Name
           Copy-Item "$buildDir\*.dll" $pkg -ErrorAction SilentlyContinue
           windeployqt --release --no-translations "$pkg\SimpleXmlValidator.exe"
           Compress-Archive -Path $pkg -DestinationPath SimpleXmlValidator-windows.zip
