@@ -64,6 +64,11 @@ TEST_F(InputValidatorTest, RejectsEmptyPath) {
 }
 
 TEST_F(InputValidatorTest, AcceptsExistingRelativeFileAndReturnsAbsolutePath) {
+    // Change CWD to temp dir so relative() stays on the same drive (required on Windows
+    // where the runner CWD may be on a different drive than TEMP).
+    CurrentPathGuard guard(std::filesystem::current_path());
+    std::filesystem::current_path(temporaryDirectory_);
+
     const auto absolutePath = temporaryDirectory_ / "relative-input.xml";
     writeFile(absolutePath, "<root/>");
     const auto relativePath = std::filesystem::relative(absolutePath, std::filesystem::current_path());
@@ -101,7 +106,8 @@ TEST_F(InputValidatorTest, AcceptsChineseAndSpacePath) {
 }
 
 TEST_F(InputValidatorTest, RejectsNonexistentFile) {
-    const auto path = temporaryDirectory_ / u8"中文 空格" / u8"missing file.xml";
+    const auto path = temporaryDirectory_ / std::filesystem::u8path(u8"中文 空格")
+                                          / std::filesystem::u8path(u8"missing file.xml");
 
     const auto result = InputValidator::check(path);
 
@@ -193,13 +199,15 @@ TEST_F(InputValidatorTest, AcceptsCrossPlatformSafeSpecialCharacters) {
 
 TEST_F(InputValidatorTest, ResolvesRelativePathFromCurrentWorkingDirectory) {
     const auto workingDirectory = temporaryDirectory_ / "working-directory";
-    const auto expectedPath = workingDirectory / "inputs" / "current-directory.xml";
-    writeFile(expectedPath, "<root/>");
+    writeFile(workingDirectory / "inputs" / "current-directory.xml", "<root/>");
 
     CurrentPathGuard guard(std::filesystem::current_path());
     std::filesystem::current_path(workingDirectory);
 
     const auto inputPath = std::filesystem::path("inputs") / "." / "current-directory.xml";
+    // Compute expectedPath after cwd change so getcwd()-based resolution is consistent
+    // with the implementation on macOS (where /var is a symlink to /private/var).
+    const auto expectedPath = std::filesystem::absolute(inputPath).lexically_normal();
     const auto result = InputValidator::check(inputPath);
 
     EXPECT_TRUE(result.ok);

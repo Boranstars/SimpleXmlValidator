@@ -100,8 +100,8 @@ TEST_F(LoggerTest, RecordsCompleteValidationResultWithUtf8Paths) {
 
     logging_ns::logValidationRecord(
         validationModule,
-        temporaryDirectory_ / "含 空格.xml",
-        temporaryDirectory_ / "规则.xsd",
+        temporaryDirectory_ / std::filesystem::u8path(u8"含 空格.xml"),
+        temporaryDirectory_ / std::filesystem::u8path(u8"规则.xsd"),
         result);
 
     const std::string content = readFile(temporaryDirectory_ / config.validationLogFileName);
