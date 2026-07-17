@@ -74,7 +74,7 @@ target_link_libraries(SimpleXmlValidatorCore PUBLIC
         SimpleXmlValidatorSanitizers
 )
 
-add_executable(SimpleXmlValidator MACOSX_BUNDLE
+add_executable(SimpleXmlValidator MACOSX_BUNDLE WIN32
         main.cpp
         src/gui/MainWindow.cpp
         src/gui/ValidationResultPresenter.cpp
