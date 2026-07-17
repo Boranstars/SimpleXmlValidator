@@ -15,7 +15,10 @@ _deps/
 *.ninja
 *.ninja_deps
 *.ninja_log
-compile_commands.json        # 由 CMake 生成；如果用 clangd，可删除此行
+# 由 CMake 生成；如果用 clangd，可删除此行
+compile_commands.json
+# 本机路径，不入库
+CMakeUserPresets.json
 install_manifest.txt
 
 # ─── 编译产物 ─────────────────────────────────────────────────────────────────

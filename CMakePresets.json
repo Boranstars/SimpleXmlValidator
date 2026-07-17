@@ -32,7 +32,8 @@
     },
     {
       "name": "linux-vcpkg-debug",
-      "configurePreset": "linux-vcpkg"
+      "configurePreset": "linux-vcpkg",
+      "configuration": "Debug"
     }
   ],
   "testPresets": [
