@@ -103,10 +103,12 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $exe = "out\build\windows-vcpkg\Release\SimpleXmlValidator.exe"
+          $buildDir = "out\build\windows-vcpkg\Release"
           $pkg = "package\SimpleXmlValidator"
           New-Item -ItemType Directory -Force -Path $pkg | Out-Null
-          Copy-Item $exe $pkg
+          Copy-Item "$buildDir\SimpleXmlValidator.exe" $pkg
+          Get-ChildItem "$buildDir\*.dll" | Select-Object -ExpandProperty Name
+          Copy-Item "$buildDir\*.dll" $pkg -ErrorAction SilentlyContinue
           windeployqt --release --no-translations "$pkg\SimpleXmlValidator.exe"
           Compress-Archive -Path $pkg -DestinationPath SimpleXmlValidator-windows.zip
 
