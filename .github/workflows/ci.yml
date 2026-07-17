@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/ci-setup]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            cmake-preset: linux-vcpkg
+            build-preset: linux-vcpkg-release
+            test-preset: linux-vcpkg-release
+            qt-host: linux
+            qt-arch: gcc_64
+            artifact-name: SimpleXmlValidator-linux
+
+          - os: windows-latest
+            cmake-preset: windows-vcpkg
+            build-preset: windows-vcpkg-release
+            test-preset: windows-vcpkg-release
+            qt-host: windows
+            qt-arch: win64_msvc2019_64
+            artifact-name: SimpleXmlValidator-windows
+
+          - os: macos-latest
+            cmake-preset: macos-vcpkg
+            build-preset: macos-vcpkg-release
+            test-preset: macos-vcpkg-release
+            qt-host: mac
+            qt-arch: clang_64
+            artifact-name: SimpleXmlValidator-macos
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Qt 5.15.2 has no official ARM64 macOS binaries in the Qt online installer.
+      # Use Homebrew on macOS (native ARM64 bottle); use the Qt installer on Linux/Windows.
+      - name: Install Qt (Linux / Windows)
+        if: runner.os != 'macOS'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          host: ${{ matrix.qt-host }}
+          target: desktop
+          arch: ${{ matrix.qt-arch }}
+          cache: true
+          cache-key-prefix: qt-5.15.2
+
+      - name: Setup Homebrew paths
+        if: runner.os == 'macOS'
+        id: brew-paths
+        run: echo "cellar=$(brew --prefix)/Cellar/qt@5" >> $GITHUB_OUTPUT
+
+      - name: Cache Homebrew Qt5
+        if: runner.os == 'macOS'
+        uses: actions/cache/restore@v4
+        id: brew-qt-cache
+        with:
+          path: ${{ steps.brew-paths.outputs.cellar }}
+          key: brew-qt5-${{ runner.os }}-${{ runner.arch }}-v1
+
+      - name: Install Qt (macOS via Homebrew)
+        if: runner.os == 'macOS'
+        run: brew install qt@5
+
+      - name: Export VCPKG_ROOT and QT_ROOT
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            QT_PREFIX="$(brew --prefix qt@5)"
+            echo "QT_ROOT=$QT_PREFIX" >> "$GITHUB_ENV"
+            echo "$QT_PREFIX/bin" >> "$GITHUB_PATH"
+          else
+            echo "QT_ROOT=$Qt5_DIR" >> "$GITHUB_ENV"
+          fi
+          echo "VCPKG_DEFAULT_BINARY_CACHE=${{ github.workspace }}/vcpkg-bincache" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v4
+        id: vcpkg-cache
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-${{ runner.os }}-
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y xvfb libgl1-mesa-dev
+
+      - name: Configure CMake
+        shell: bash
+        env:
+          VCPKG_BINARY_SOURCES: "clear;default,readwrite"
+        run: |
+          mkdir -p "${{ github.workspace }}/vcpkg-bincache"
+          cmake --preset ${{ matrix.cmake-preset }} -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.build-preset }}
+
+      - name: Test (Linux — requires virtual display for GUI tests)
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum ctest --preset ${{ matrix.test-preset }}
+
+      - name: Test (Windows / macOS)
+        if: runner.os != 'Linux'
+        run: ctest --preset ${{ matrix.test-preset }}
+
+      - name: Save vcpkg binary cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ${{ github.workspace }}/vcpkg-bincache
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+
+      - name: Save Homebrew Qt5 cache
+        uses: actions/cache/save@v4
+        if: always() && runner.os == 'macOS'
+        with:
+          path: ${{ steps.brew-paths.outputs.cellar }}
+          key: ${{ steps.brew-qt-cache.outputs.cache-primary-key }}
+
+      # ── Packaging ──────────────────────────────────────────────────────────
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = "out\build\windows-vcpkg\Release\SimpleXmlValidator.exe"
+          $pkg = "package\SimpleXmlValidator"
+          New-Item -ItemType Directory -Force -Path $pkg | Out-Null
+          Copy-Item $exe $pkg
+          windeployqt --release --no-translations "$pkg\SimpleXmlValidator.exe"
+          Compress-Archive -Path $pkg -DestinationPath SimpleXmlValidator-windows.zip
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          macdeployqt out/build/macos-vcpkg/SimpleXmlValidator.app -dmg
+          mv out/build/macos-vcpkg/SimpleXmlValidator.dmg SimpleXmlValidator-macos.dmg
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: cp out/build/linux-vcpkg/SimpleXmlValidator SimpleXmlValidator-linux
+
+      # ── Upload artifacts ───────────────────────────────────────────────────
+
+      - name: Upload artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: SimpleXmlValidator-windows.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: SimpleXmlValidator-macos.dmg
+          if-no-files-found: error
+
+      - name: Upload artifact (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: SimpleXmlValidator-linux
+          if-no-files-found: error
