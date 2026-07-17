@@ -31,7 +31,7 @@ jobs:
             qt-arch: win64_msvc2019_64
             artifact-name: SimpleXmlValidator-windows
 
-          - os: macos-13
+          - os: macos-latest
             cmake-preset: macos-vcpkg
             build-preset: macos-vcpkg-release
             test-preset: macos-vcpkg-release
