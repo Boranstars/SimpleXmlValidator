@@ -81,6 +81,7 @@ add_executable(SimpleXmlValidator MACOSX_BUNDLE WIN32
         src/gui/Style.cpp
         src/gui/XmlSyntaxHighlighter.cpp
         src/gui/CodeEditor.cpp
+        src/gui/resources.qrc
 )
 target_link_libraries(SimpleXmlValidator
         Qt5::Core
