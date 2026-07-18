@@ -13,6 +13,7 @@
         <file>images/success.png</file>
         <file>images/fail.png</file>
         
+        <file alias="style.qss">style.qss</file>
 
     </qresource>
 </RCC>
