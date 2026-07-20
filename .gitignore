@@ -3,6 +3,7 @@ cmake-build-*/
 build/
 out/
 install/
+build-*/
 
 # CMake 生成文件
 CMakeCache.txt
