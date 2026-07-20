@@ -150,19 +150,14 @@ void MainWindow::setupUi() {
     setWindowTitle("XML 语法校验工具");
 
     // 工具栏动作（同时挂到菜单栏与工具栏）。
-    //auto* openXmlAction  = new QAction("打开XML", this);
-    //auto* openXsdAction  = new QAction("打开XSD", this);
-    //validateAction_      = new QAction("开始校验", this);
-    //auto* clearAction    = new QAction("清空", this);
     auto* openXmlAction  = new QAction(QIcon(":/images/open_xml.png"), "打开XML", this);
     auto* openXsdAction  = new QAction(QIcon(":/images/open_xsd.png"), "打开XSD", this);
-    //validateAction_      = new QAction(QIcon(":/images/run.png"), "开始校验", this);
-    // 【修改为】：手动生成"亮起"与"暗淡"两种状态的图标
     QPixmap normalPix(":/images/run.png");
 
 
     QPixmap disabledPix(normalPix.size());
-    disabledPix.fill(Qt::transparent); // 背景透明
+    disabledPix.setDevicePixelRatio(normalPix.devicePixelRatio());
+    disabledPix.fill(Qt::transparent);
     
     QPainter painter(&disabledPix);
     painter.setOpacity(0.4);           // 设置 40% 的透明度（呈现暗淡/灰色效果）
@@ -223,9 +218,6 @@ void MainWindow::setupUi() {
     auto* centerLayout = new QVBoxLayout(centerPanel);
 
     auto* inputGroup  = new QGroupBox("输入配置", centerPanel);
-    
-    // 设置最大高度，允许它更小，但不允许被拉得过高
-    inputGroup->setMaximumHeight(300);
 
     auto* inputLayout = new QGridLayout(inputGroup);
     xmlPathEdit_ = new QLineEdit(inputGroup);
