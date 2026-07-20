@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MntRpt>
+    <Base time="2026-05-21 10:46:43" type="模拟预演" objName="5" total_estimate="0"/>
+    <Substation name="gcce" desc="gcce"/>
+    <Ied name="IED001" desc="线路保护装置"/>
+    <!-- 错误点：Step 的 value 值为 2，违反了 0 或 1 的约束 -->
+    <Step NO="1" ied_name="IED001" ied_desc="线路保护装置" estimate="0" error_reason="" type="1" object_path="/path/to/obj" value="2">
+        <content>合上某开关</content>
+    </Step>
+</MntRpt>
