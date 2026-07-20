@@ -1,0 +1,20 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <!-- prefix 是资源访问的前缀路径，通常设置为 "/" 即可 -->
+    <qresource prefix="/">
+        
+        <!-- 这里是您存放图标的地方，路径是相对于当前 resources.qrc 文件的相对路径 -->
+        <!-- 假设您在 gui 文件夹下新建了一个 images 文件夹用来放图标，可以把注释解开： -->
+        
+        <file>images/open_xml.png</file>
+        <file>images/open_xsd.png</file>
+        <file>images/run.png</file>
+        <file>images/clear.png</file>
+        <file>images/success.png</file>
+        <file>images/fail.png</file>
+        <file>images/app_icon.png</file>
+        
+        <file alias="style.qss">style.qss</file>
+
+    </qresource>
+</RCC>

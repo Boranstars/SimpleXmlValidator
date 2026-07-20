@@ -40,6 +40,10 @@
 #include <QWidget>
 #include <QtGlobal>
 
+#include <QIcon>
+#include <QPixmap>
+#include <QPainter>
+
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -101,7 +105,7 @@ std::vector<std::string> readLines(const std::filesystem::path& path) {
 }
 
 // 创建一个状态卡片（标题 + 数值）。返回卡片框，并通过 valueOut 输出数值标签。
-QFrame* makeCard(const QString& title, QLabel** valueOut, QWidget* parent) {
+QFrame* makeCard(const QString& title, QLabel** valueOut, const QString& colorHex, QWidget* parent) {
     auto* card = new QFrame(parent);
     card->setObjectName("card");
     card->setFrameShape(QFrame::NoFrame);
@@ -119,6 +123,7 @@ QFrame* makeCard(const QString& title, QLabel** valueOut, QWidget* parent) {
     valueFont.setPointSize(valueFont.pointSize() + 4);
     valueFont.setBold(true);
     valueText->setFont(valueFont);
+    valueText->setStyleSheet(QString("color: %1;").arg(colorHex));
     layout->addWidget(titleText);
     layout->addWidget(valueText);
     *valueOut = valueText;
@@ -144,11 +149,32 @@ MainWindow::~MainWindow() = default;
 void MainWindow::setupUi() {
     setWindowTitle("XML 语法校验工具");
 
+    // 【新增】：设置窗口左上角的应用图标
+    setWindowIcon(QIcon(":/images/app_icon.png"));
+
     // 工具栏动作（同时挂到菜单栏与工具栏）。
-    auto* openXmlAction  = new QAction("打开XML", this);
-    auto* openXsdAction  = new QAction("打开XSD", this);
-    validateAction_      = new QAction("开始校验", this);
-    auto* clearAction    = new QAction("清空", this);
+    auto* openXmlAction  = new QAction(QIcon(":/images/open_xml.png"), "打开XML", this);
+    auto* openXsdAction  = new QAction(QIcon(":/images/open_xsd.png"), "打开XSD", this);
+    QPixmap normalPix(":/images/run.png");
+
+
+    QPixmap disabledPix(normalPix.size());
+    disabledPix.setDevicePixelRatio(normalPix.devicePixelRatio());
+    disabledPix.fill(Qt::transparent);
+    
+    QPainter painter(&disabledPix);
+    painter.setOpacity(0.4);           // 设置 40% 的透明度（呈现暗淡/灰色效果）
+    painter.drawPixmap(0, 0, normalPix);
+    painter.end();
+
+    QIcon runIcon;
+    runIcon.addPixmap(normalPix, QIcon::Normal);     // 启用时的亮起状态
+    runIcon.addPixmap(disabledPix, QIcon::Disabled); // 禁用时的暗淡状态
+
+    validateAction_ = new QAction(runIcon, "开始校验", this);
+
+    auto* clearAction    = new QAction(QIcon(":/images/clear.png"), "清空", this);
+
     connect(openXmlAction, &QAction::triggered, this, &MainWindow::onSelectXml);
     connect(openXsdAction, &QAction::triggered, this, &MainWindow::onSelectXsd);
     connect(validateAction_, &QAction::triggered, this, &MainWindow::onValidate);
@@ -170,6 +196,10 @@ void MainWindow::setupUi() {
 
     auto* toolBar = addToolBar("主工具栏");
     toolBar->setMovable(false);
+
+    // 【关键新增行】：强制设置工具栏按钮为"文字在图标右侧"模式
+    toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
     toolBar->addAction(openXmlAction);
     toolBar->addAction(openXsdAction);
     toolBar->addAction(validateAction_);
@@ -191,6 +221,7 @@ void MainWindow::setupUi() {
     auto* centerLayout = new QVBoxLayout(centerPanel);
 
     auto* inputGroup  = new QGroupBox("输入配置", centerPanel);
+
     auto* inputLayout = new QGridLayout(inputGroup);
     xmlPathEdit_ = new QLineEdit(inputGroup);
     xmlPathEdit_->setReadOnly(true);
@@ -221,10 +252,11 @@ void MainWindow::setupUi() {
     centerLayout->addWidget(inputGroup);
 
     auto* cardRow = new QHBoxLayout();
-    cardRow->addWidget(makeCard("校验状态", &statusValueLabel_, centerPanel));
-    cardRow->addWidget(makeCard("错误数量", &errorCountValueLabel_, centerPanel));
-    cardRow->addWidget(makeCard("警告数量", &warningCountValueLabel_, centerPanel));
-    cardRow->addWidget(makeCard("耗时", &elapsedValueLabel_, centerPanel));
+    cardRow->addWidget(makeCard("校验状态", &statusValueLabel_, "#1f2937", centerPanel));
+    cardRow->addWidget(makeCard("错误数量", &errorCountValueLabel_, "#c62828", centerPanel));
+    cardRow->addWidget(makeCard("警告数量", &warningCountValueLabel_, "#e65100", centerPanel));
+    cardRow->addWidget(makeCard("耗时", &elapsedValueLabel_, "#2563eb", centerPanel));
+
     centerLayout->addLayout(cardRow);
 
     resultTabs_ = new QTabWidget(centerPanel);
@@ -312,6 +344,10 @@ void MainWindow::setupUi() {
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 4);
     splitter->setStretchFactor(2, 2);
+
+    // 【微调点】：补全对象名，使 QSS 中的 #centralRoot 规则生效
+    splitter->setObjectName("centralRoot");
+    
     setCentralWidget(splitter);
 
     statusBar()->showMessage("就绪");
