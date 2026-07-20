@@ -114,7 +114,6 @@ private:
     int currentPage_ = 0;
     int pageSize_    = 100;
 
-
     // 右侧错误详情面板。
     QLabel*     detailLevelLabel_   = nullptr;
     QLabel*     detailFileLabel_    = nullptr;

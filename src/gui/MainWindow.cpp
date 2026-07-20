@@ -41,8 +41,6 @@
 #include <QtGlobal>
 
 #include <QIcon>
-#include <QTime>
-// 【新增这两行】：用于手动绘制暗淡图标
 #include <QPixmap>
 #include <QPainter>
 
@@ -107,52 +105,27 @@ std::vector<std::string> readLines(const std::filesystem::path& path) {
 }
 
 // 创建一个状态卡片（标题 + 数值）。返回卡片框，并通过 valueOut 输出数值标签。
-QFrame* makeCard(const QString& title, QLabel** valueOut, const QString& unit, const QString& colorHex, QWidget* parent){
+QFrame* makeCard(const QString& title, QLabel** valueOut, const QString& colorHex, QWidget* parent) {
     auto* card = new QFrame(parent);
     card->setObjectName("card");
     card->setFrameShape(QFrame::NoFrame);
-
-    // 强制每张卡片的高度固定为  像素
-    card->setFixedHeight(150);
-
     // 柔和投影：QSS 不支持 box-shadow，改用图形效果实现。
     auto* shadow = new QGraphicsDropShadowEffect(card);
     shadow->setBlurRadius(18);
     shadow->setOffset(0, 2);
     shadow->setColor(QColor(0, 0, 0, 38));
     card->setGraphicsEffect(shadow);
-
     auto* layout    = new QVBoxLayout(card);
-    // 【新增】：让垂直布局里的所有内容在 150 像素的高度里完美居中
-    layout->setAlignment(Qt::AlignCenter);
-    layout->setSpacing(8); // 控制三行文字之间的垂直间距
-    layout->setContentsMargins(10, 10, 10, 10);
-
     auto* titleText = new QLabel(title, card);
-    titleText->setAlignment(Qt::AlignCenter); // 强制文字水平居中
-    //titleText->setStyleSheet("color: #6b7280;");
-    titleText->setStyleSheet("color: #374151; font-size: 20px;");//颜色和大小改变
-    layout->addWidget(titleText);
-
+    titleText->setStyleSheet("color: #6b7280;");
     auto* valueText = new QLabel("-", card);
-    valueText->setAlignment(Qt::AlignCenter); // 强制文字水平居中
-    // 【修改】：舍弃原有的 QFont 逻辑，直接用 QSS 注入参数里的 colorHex，并放大字号
-    valueText->setStyleSheet(QString("color: %1; font-size: 32px; font-weight: bold;").arg(colorHex));
+    QFont valueFont = valueText->font();
+    valueFont.setPointSize(valueFont.pointSize() + 4);
+    valueFont.setBold(true);
+    valueText->setFont(valueFont);
+    valueText->setStyleSheet(QString("color: %1;").arg(colorHex));
+    layout->addWidget(titleText);
     layout->addWidget(valueText);
-    
-    // 【新增】：如果传入了单位才显示，用来配合耗时卡片省略文字
-    if (!unit.isEmpty()) {
-        auto* unitText = new QLabel(unit, card);
-        unitText->setAlignment(Qt::AlignCenter); // 强制文字水平居中
-        unitText->setStyleSheet("color: #374151; font-size: 20px;");
-        layout->addWidget(unitText);
-    }
-    // QFont valueFont = valueText->font();
-    // valueFont.setPointSize(valueFont.pointSize() + 4);
-    // valueFont.setBold(true);
-    // valueText->setFont(valueFont);
-    // layout->addWidget(titleText);
-    // layout->addWidget(valueText);
     *valueOut = valueText;
     return card;
 }
@@ -180,19 +153,14 @@ void MainWindow::setupUi() {
     setWindowIcon(QIcon(":/images/app_icon.png"));
 
     // 工具栏动作（同时挂到菜单栏与工具栏）。
-    //auto* openXmlAction  = new QAction("打开XML", this);
-    //auto* openXsdAction  = new QAction("打开XSD", this);
-    //validateAction_      = new QAction("开始校验", this);
-    //auto* clearAction    = new QAction("清空", this);
     auto* openXmlAction  = new QAction(QIcon(":/images/open_xml.png"), "打开XML", this);
     auto* openXsdAction  = new QAction(QIcon(":/images/open_xsd.png"), "打开XSD", this);
-    //validateAction_      = new QAction(QIcon(":/images/run.png"), "开始校验", this);
-    // 【修改为】：手动生成“亮起”与“暗淡”两种状态的图标
     QPixmap normalPix(":/images/run.png");
 
 
     QPixmap disabledPix(normalPix.size());
-    disabledPix.fill(Qt::transparent); // 背景透明
+    disabledPix.setDevicePixelRatio(normalPix.devicePixelRatio());
+    disabledPix.fill(Qt::transparent);
     
     QPainter painter(&disabledPix);
     painter.setOpacity(0.4);           // 设置 40% 的透明度（呈现暗淡/灰色效果）
@@ -229,7 +197,7 @@ void MainWindow::setupUi() {
     auto* toolBar = addToolBar("主工具栏");
     toolBar->setMovable(false);
 
-    // 【关键新增行】：强制设置工具栏按钮为“文字在图标右侧”模式
+    // 【关键新增行】：强制设置工具栏按钮为"文字在图标右侧"模式
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
     toolBar->addAction(openXmlAction);
@@ -253,9 +221,6 @@ void MainWindow::setupUi() {
     auto* centerLayout = new QVBoxLayout(centerPanel);
 
     auto* inputGroup  = new QGroupBox("输入配置", centerPanel);
-    
-    // 设置最大高度，允许它更小，但不允许被拉得过高
-    inputGroup->setMaximumHeight(300);
 
     auto* inputLayout = new QGridLayout(inputGroup);
     xmlPathEdit_ = new QLineEdit(inputGroup);
@@ -287,22 +252,10 @@ void MainWindow::setupUi() {
     centerLayout->addWidget(inputGroup);
 
     auto* cardRow = new QHBoxLayout();
-    // cardRow->addWidget(makeCard("校验状态", &statusValueLabel_, centerPanel));
-    // cardRow->addWidget(makeCard("错误数量", &errorCountValueLabel_, centerPanel));
-    // cardRow->addWidget(makeCard("警告数量", &warningCountValueLabel_, centerPanel));
-    // cardRow->addWidget(makeCard("耗时", &elapsedValueLabel_, centerPanel));
-
-    // 状态卡片：初始深灰色（其实不重要，因为后续 applyPresented 会用 HTML 完全覆盖它）
-    cardRow->addWidget(makeCard("校验状态", &statusValueLabel_, "", "#1f2937", centerPanel));
-    
-    // 错误数量：红色数值，带“个错误”单位
-    cardRow->addWidget(makeCard("错误数量", &errorCountValueLabel_, "个错误", "#c62828", centerPanel));
-    
-    // 警告数量：橙色数值，带“个警告”单位
-    cardRow->addWidget(makeCard("警告数量", &warningCountValueLabel_, "个警告", "#e65100", centerPanel));
-    
-    // 耗时：蓝色数值，【不传单位】以符合省略下方文字的要求
-    cardRow->addWidget(makeCard("耗时", &elapsedValueLabel_, "", "#2563eb", centerPanel));
+    cardRow->addWidget(makeCard("校验状态", &statusValueLabel_, "#1f2937", centerPanel));
+    cardRow->addWidget(makeCard("错误数量", &errorCountValueLabel_, "#c62828", centerPanel));
+    cardRow->addWidget(makeCard("警告数量", &warningCountValueLabel_, "#e65100", centerPanel));
+    cardRow->addWidget(makeCard("耗时", &elapsedValueLabel_, "#2563eb", centerPanel));
 
     centerLayout->addLayout(cardRow);
 
@@ -586,55 +539,16 @@ void MainWindow::applyPresented(const PresentedResult& presented, double elapsed
             statusValueLabel_->setStyleSheet(QString());
             break;
         case StatusCardKind::Valid:
-            // statusValueLabel_->setText("校验通过");
-            // statusValueLabel_->setStyleSheet("color: #2e7d32;");
-
-            // 【修改】：使用 HTML Table 实现绝对居中对齐，并精确控制尺寸
-            statusValueLabel_->setText(
-                "<table cellpadding='0' cellspacing='0'>"
-                "<tr>"
-                "  <td valign='middle'><img src=':/images/success.png' width='70' height='70'></td>"
-                "  <td width='20'></td>" // 控制图标和文字之间的间距
-                "  <td valign='middle'><span style='font-size: 40px; font-weight: bold;'>校验通过</span></td>"
-                "</tr>"
-                "</table>"
-            );
-            
-            statusValueLabel_->setStyleSheet("color: #2e7d32;"); // 文字保持绿色
+            statusValueLabel_->setText("校验通过");
+            statusValueLabel_->setStyleSheet("color: #2e7d32;");
             break;
         case StatusCardKind::Invalid:
-            // statusValueLabel_->setText("校验未通过");
-            // statusValueLabel_->setStyleSheet("color: #c62828;");
-            
-            // 【修改】：未通过状态的精准排版
-            statusValueLabel_->setText(
-                "<table cellpadding='0' cellspacing='0'>"
-                "<tr>"
-                "  <td valign='middle'><img src=':/images/fail.png' width='70' height='70'></td>"
-                "  <td width='20'></td>" 
-                "  <td valign='middle'><span style='font-size: 40px; font-weight: bold;'>校验未通过</span></td>"
-                "</tr>"
-                "</table>"
-            );
-
-            statusValueLabel_->setStyleSheet("color: #c62828;"); // 文字保持红色
+            statusValueLabel_->setText("校验未通过");
+            statusValueLabel_->setStyleSheet("color: #c62828;");
             break;
         case StatusCardKind::Failed:
-            // statusValueLabel_->setText("校验失败");
-            // statusValueLabel_->setStyleSheet("color: #e65100;");
-            
-            // 【修改】：失败（阻断）状态的精准排版
-            statusValueLabel_->setText(
-                "<table cellpadding='0' cellspacing='0'>"
-                "<tr>"
-                "  <td valign='middle'><img src=':/images/fail.png' width='70' height='70'></td>"
-                "  <td width='20'></td>" 
-                "  <td valign='middle'><span style='font-size: 40px; font-weight: bold;'>校验失败</span></td>"
-                "</tr>"
-                "</table>"
-            );
-
-            statusValueLabel_->setStyleSheet("color: #e65100;"); // 文字保持橙色
+            statusValueLabel_->setText("校验失败");
+            statusValueLabel_->setStyleSheet("color: #e65100;");
             break;
     }
     const bool hasResult = presented.statusCard != StatusCardKind::None;
@@ -644,16 +558,8 @@ void MainWindow::applyPresented(const PresentedResult& presented, double elapsed
     warningCountValueLabel_->setText(hasResult ? QString::number(static_cast<qulonglong>(
                                                      presented.warningCount))
                                                : QString("-"));
-    // elapsedValueLabel_->setText(
-    //     hasResult ? QString("%1 ms").arg(elapsedMilliseconds, 0, 'f', 1) : QString("-"));
-    // 【修改】：利用 QTime 将毫秒直接转换为标准时钟格式，彻底舍弃原先的 " ms" 后缀
-    if (hasResult) {
-        QString timeStr = QTime(0, 0).addMSecs(static_cast<int>(elapsedMilliseconds)).toString("hh:mm:ss.zzz");
-        elapsedValueLabel_->setText(timeStr);
-    } else {
-        elapsedValueLabel_->setText("-");
-    }
-
+    elapsedValueLabel_->setText(
+        hasResult ? QString("%1 ms").arg(elapsedMilliseconds, 0, 'f', 1) : QString("-"));
 
     // 错误数量说明与表格（分页展示）。
     if (presented.showErrorTable) {
