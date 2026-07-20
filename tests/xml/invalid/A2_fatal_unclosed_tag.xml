@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 错误点：根节点开启是大写的 APP，闭合却使用了小写的 app -->
+<APP appname="setting94" appdesc="setting94">
+    <QueryTime time="2025-10-14 09:57:05.584">
+        <IED name="P_L5006A" desc="500kV线路1第一套保护">
+            <Result>比对一致</Result>
+        </IED>
+    </QueryTime>
+</app> 

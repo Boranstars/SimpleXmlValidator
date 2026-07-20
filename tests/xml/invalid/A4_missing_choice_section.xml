@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 错误点：仅包含了 System 和 Ied 概要，没有任何详细段（如 DiffZone, SecCircuit 等），违反 choice 的 minOccurs="1" 约束 -->
+<CheckReport>
+    <System>
+        <Substation>某变电站</Substation>
+        <CheckTime>2026-06-10 08:00:00</CheckTime>
+        <CheckReason>1</CheckReason>
+        <DeviceSum>10</DeviceSum>
+        <CheckDeviceSum>10</CheckDeviceSum>
+        <AbnormalDeviceSum>2</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <Item DeviceId="DEV001" DeviceName="线路保护A" IsChecked="1" UnCheckReason="0" Result="0">
+            <Zone IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+    </Ied>
+</CheckReport>

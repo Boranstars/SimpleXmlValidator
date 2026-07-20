@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<APP appname="setting94" appdesc="setting94">
+    <QueryTime time="2025-10-14 09:57:05.584">
+        <!-- 错误点：IED 节点缺少了 use="required" 的 name 属性 -->
+        <IED desc="500kV线路1第一套保护">
+            <Record type="Setting" time="2025-10-14 09:57:05.584">
+                <Point path="P1" desc="D1" other=""><Zone Number="1"><Value>1</Value><Time>2025-10-14 09:57:05.584</Time><IsDifferent>0</IsDifferent></Zone></Point>
+            </Record>
+            <CompareTemplate>
+                <Point path="P1" desc="D1" other=""><Zone Number="1"><Value>1</Value><Time>2025-10-14 09:57:05.584</Time></Zone></Point>
+            </CompareTemplate>
+            <Result>比对一致</Result>
+        </IED>
+    </QueryTime>
+</APP>

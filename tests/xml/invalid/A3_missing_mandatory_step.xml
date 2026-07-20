@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MntRpt>
+    <Base time="2026-05-21 10:46:43" type="模拟预演" objName="5" total_estimate="0"/>
+    <Substation name="gcce" desc="gcce"/>
+    <Ied name="IED001" desc="线路保护装置"/>
+    <!-- 错误点：完全缺少了必需的 Step 节点 -->
+</MntRpt>
