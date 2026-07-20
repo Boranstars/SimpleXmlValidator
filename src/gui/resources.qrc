@@ -12,6 +12,7 @@
         <file>images/clear.png</file>
         <file>images/success.png</file>
         <file>images/fail.png</file>
+        <file>images/app_icon.png</file>
         
         <file alias="style.qss">style.qss</file>
 

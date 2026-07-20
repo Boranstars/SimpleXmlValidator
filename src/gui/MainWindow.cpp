@@ -176,6 +176,9 @@ MainWindow::~MainWindow() = default;
 void MainWindow::setupUi() {
     setWindowTitle("XML 语法校验工具");
 
+    // 【新增】：设置窗口左上角的应用图标
+    setWindowIcon(QIcon(":/images/app_icon.png"));
+
     // 工具栏动作（同时挂到菜单栏与工具栏）。
     //auto* openXmlAction  = new QAction("打开XML", this);
     //auto* openXsdAction  = new QAction("打开XSD", this);
