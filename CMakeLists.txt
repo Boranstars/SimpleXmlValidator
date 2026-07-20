@@ -21,8 +21,7 @@ add_library(SimpleXmlValidatorWarnings INTERFACE)
 if (SIMPLE_XML_VALIDATOR_ENABLE_WARNINGS)
     if (MSVC)
         target_compile_options(SimpleXmlValidatorWarnings INTERFACE
-                /W4
-                /permissive-)
+                /W4)
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(SimpleXmlValidatorWarnings INTERFACE
                 -Wall
