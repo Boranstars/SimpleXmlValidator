@@ -8,6 +8,7 @@ set(CMAKE_AUTOUIC ON)
 
 option(SIMPLE_XML_VALIDATOR_ENABLE_ASAN "启用 AddressSanitizer（含 LeakSanitizer）" OFF)
 option(SIMPLE_XML_VALIDATOR_ENABLE_UBSAN "启用 UndefinedBehaviorSanitizer" OFF)
+option(SIMPLE_XML_VALIDATOR_ENABLE_WARNINGS "启用推荐的编译器警告" ON)
 
 # 使用MSVC编译器时，确保源文件以UTF-8编码编译，以避免中文路径或字符串导致的编译错误。
 if(MSVC)
@@ -15,6 +16,22 @@ if(MSVC)
 endif()
 
 add_library(SimpleXmlValidatorSanitizers INTERFACE)
+add_library(SimpleXmlValidatorWarnings INTERFACE)
+
+if (SIMPLE_XML_VALIDATOR_ENABLE_WARNINGS)
+    if (MSVC)
+        target_compile_options(SimpleXmlValidatorWarnings INTERFACE
+                /W4
+                /permissive-)
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(SimpleXmlValidatorWarnings INTERFACE
+                -Wall
+                -Wextra
+                -Wpedantic)
+    else ()
+        message(WARNING "当前编译器未配置推荐的编译器警告选项。")
+    endif ()
+endif ()
 
 # Use sanitizer flags only if the compiler supports them
 if (SIMPLE_XML_VALIDATOR_ENABLE_ASAN OR SIMPLE_XML_VALIDATOR_ENABLE_UBSAN)
@@ -72,6 +89,7 @@ target_link_libraries(SimpleXmlValidatorCore PRIVATE
 )
 target_link_libraries(SimpleXmlValidatorCore PUBLIC
         SimpleXmlValidatorSanitizers
+        SimpleXmlValidatorWarnings
 )
 
 add_executable(SimpleXmlValidator MACOSX_BUNDLE WIN32
