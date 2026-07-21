@@ -60,8 +60,9 @@ xercesc::InputSource* LocalResourceResolver::resolveEntity(
         if (baseUri.rfind("file://", 0) == 0) {
             parentDir = pathFromFileUri(baseUri).parent_path();
         } else if (!baseUri.empty()) {
-            // getBaseURI() 在某些平台/Xerces 版本可能直接返回本地路径而非 file:// URI
-            try { parentDir = std::filesystem::path(baseUri).parent_path(); } catch (...) {}
+            // getBaseURI() 可能返回原生文件系统路径而非 file:// URI；
+            // 必须用 u8path 以在 Windows 上正确解析 UTF-8 字节。
+            try { parentDir = std::filesystem::u8path(baseUri).parent_path(); } catch (...) {}
         }
 
         if (!parentDir.empty()) {

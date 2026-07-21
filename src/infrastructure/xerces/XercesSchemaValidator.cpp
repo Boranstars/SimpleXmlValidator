@@ -3,9 +3,9 @@
 #include "LocalResourceResolver.h"
 #include "XercesErrorHandler.h"
 #include "XercesString.h"
-#include "XercesUri.h"
 
 #include <xercesc/dom/DOMException.hpp>
+#include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
 #include <xercesc/util/XMLException.hpp>
@@ -49,17 +49,20 @@ SchemaValidationReport XercesSchemaValidator::validate(
     xercesc::XercesDOMParser parser;
     configureParser(parser, handler, resolver);
 
-    const std::string xsdPathUri = toFileUri(xsdPath);
-    const std::string xmlPathUri = toFileUri(xmlPath);
+    const std::string xsdPathUtf8 = xsdPath.u8string();
+    const std::string xmlPathUtf8 = xmlPath.u8string();
 
     // 已加载 XSD 的 targetNamespace；空字符串表示无命名空间 Schema。
     std::string targetNamespace;
 
     // 阶段一：预加载并缓存 XSD Grammar。
+    // 使用 LocalFileInputSource + u8string 路径打开主文件，避免将 file:// URI
+    // 直接交给 Xerces URL 层（其在 Windows/macOS 无法正确处理 percent-encoded 非 ASCII 路径）。
     try {
-        ScopedXMLCh         xsdLocation(xsdPathUri);
+        ScopedXMLCh                   xsdLocation(xsdPathUtf8);
+        xercesc::LocalFileInputSource xsdSource(xsdLocation.get());
         xercesc::Grammar* grammar = parser.loadGrammar(
-            xsdLocation.get(), xercesc::Grammar::SchemaGrammarType, true);
+            xsdSource, xercesc::Grammar::SchemaGrammarType, true);
 
         auto schemaErrors = handler.takeErrors();
         if (resolver.hasError()) {
@@ -94,16 +97,17 @@ SchemaValidationReport XercesSchemaValidator::validate(
         handler.resetErrors();
         // 依据 XSD 是否带 targetNamespace 选择合适的外部 Schema 绑定方式。
         if (targetNamespace.empty()) {
-            ScopedXMLCh xsdLocation(xsdPathUri);
+            ScopedXMLCh xsdLocation(xsdPathUtf8);
             parser.setExternalNoNamespaceSchemaLocation(xsdLocation.get());
         } else {
-            ScopedXMLCh schemaLocation(targetNamespace + " " + xsdPathUri);
+            ScopedXMLCh schemaLocation(targetNamespace + " " + xsdPathUtf8);
             parser.setExternalSchemaLocation(schemaLocation.get());
         }
         parser.useCachedGrammarInParse(true);
 
-        ScopedXMLCh xmlLocation(xmlPathUri);
-        parser.parse(xmlLocation.get());
+        ScopedXMLCh                   xmlLocation(xmlPathUtf8);
+        xercesc::LocalFileInputSource xmlSource(xmlLocation.get());
+        parser.parse(xmlSource);
 
         return {SchemaValidationStage::Completed, handler.takeErrors(), {}};
     } catch (const xercesc::OutOfMemoryException&) {
