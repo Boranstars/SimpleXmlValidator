@@ -76,6 +76,19 @@ TEST_F(XercesTestFixture, ConvertsWindowsUtf8InputToExpectedUtf16CodeUnits) {
     EXPECT_EQ(encoded.get()[1], static_cast<XMLCh>(0x6587));
     EXPECT_EQ(encoded.get()[2], static_cast<XMLCh>(0));
 }
+
+TEST_F(XercesTestFixture, PreservesWindowsUtf8NonBmpCharacterAsSurrogatePair) {
+    const XMLCh character[] = {
+        static_cast<XMLCh>(0xD83D), static_cast<XMLCh>(0xDE00), static_cast<XMLCh>(0),
+    };
+    ScopedXMLCh encoded(u8"😀");
+
+    EXPECT_EQ(fromXMLCh(character), u8"😀");
+    ASSERT_NE(encoded.get(), nullptr);
+    EXPECT_EQ(encoded.get()[0], static_cast<XMLCh>(0xD83D));
+    EXPECT_EQ(encoded.get()[1], static_cast<XMLCh>(0xDE00));
+    EXPECT_EQ(encoded.get()[2], static_cast<XMLCh>(0));
+}
 #endif
 
 }
