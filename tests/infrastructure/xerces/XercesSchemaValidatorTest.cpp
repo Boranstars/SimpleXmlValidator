@@ -104,9 +104,9 @@ TEST_F(XercesSchemaValidatorTest, BlocksRemoteSchemaDependency) {
 
 #if defined(_WIN32) || defined(__APPLE__)
 TEST_F(XercesSchemaValidatorTest, CompletesForUtf8PrimaryInputPathsOnWindowsAndMacOS) {
-    const auto inputDirectory = temporaryDirectory_ / u8"主输入 路径 é";
-    const auto xsdPath = inputDirectory / u8"主架构 é.xsd";
-    const auto xmlPath = inputDirectory / u8"示例文档 é.xml";
+    const auto inputDirectory = temporaryDirectory_ / std::filesystem::u8path(u8"主输入 路径 é");
+    const auto xsdPath = inputDirectory / std::filesystem::u8path(u8"主架构 é.xsd");
+    const auto xmlPath = inputDirectory / std::filesystem::u8path(u8"示例文档 é.xml");
     writeFile(xsdPath,
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
@@ -124,7 +124,7 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8PrimaryInputPathsOnWindowsAndM
 
 TEST_F(XercesSchemaValidatorTest, CompletesForUtf8RelativeIncludePathOnWindowsAndMacOS) {
     const auto schemaDirectory = temporaryDirectory_ / "schema directory";
-    const auto dependencyPath = schemaDirectory / u8"公共依赖 é.xsd";
+    const auto dependencyPath = schemaDirectory / std::filesystem::u8path(u8"公共依赖 é.xsd");
     const auto xsdPath = schemaDirectory / "schema.xsd";
     const auto xmlPath = schemaDirectory / "document.xml";
     writeFile(dependencyPath,
@@ -148,9 +148,9 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8RelativeIncludePathOnWindowsAn
 }
 
 TEST_F(XercesSchemaValidatorTest, CompletesForUtf8TargetNamespacePathsOnWindowsAndMacOS) {
-    const auto inputDirectory = temporaryDirectory_ / u8"命名空间 路径 é";
-    const auto xsdPath = inputDirectory / u8"命名空间架构 é.xsd";
-    const auto xmlPath = inputDirectory / u8"命名空间文档 é.xml";
+    const auto inputDirectory = temporaryDirectory_ / std::filesystem::u8path(u8"命名空间 路径 é");
+    const auto xsdPath = inputDirectory / std::filesystem::u8path(u8"命名空间架构 é.xsd");
+    const auto xmlPath = inputDirectory / std::filesystem::u8path(u8"命名空间文档 é.xml");
     writeFile(xsdPath,
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
