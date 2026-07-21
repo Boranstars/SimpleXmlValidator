@@ -123,9 +123,9 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnMac
     XercesSchemaValidator validator;
     const auto result = validator.validate(xmlPath, xsdPath);
 
-    EXPECT_EQ(result.stage, SchemaValidationStage::Completed);
+    EXPECT_EQ(result.stage, SchemaValidationStage::Completed) << "message: " << result.message;
     EXPECT_TRUE(result.errors.empty());
-    EXPECT_TRUE(result.message.empty());
+    EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
 #endif
 
@@ -150,9 +150,9 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnWin
     XercesSchemaValidator validator;
     const auto result = validator.validate(xmlPath, xsdPath);
 
-    EXPECT_EQ(result.stage, SchemaValidationStage::Completed);
+    EXPECT_EQ(result.stage, SchemaValidationStage::Completed) << "message: " << result.message;
     EXPECT_TRUE(result.errors.empty());
-    EXPECT_TRUE(result.message.empty());
+    EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
 #endif
 
