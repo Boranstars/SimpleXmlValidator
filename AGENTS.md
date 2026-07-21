@@ -1,126 +1,59 @@
-# SimpleXmlValidator 开发指南
+# SimpleXmlValidator 维护指南
 
-## 1. 文档优先级与项目目标
+## 1. 文档与版本状态
 
-- `docs/概要设计报告.md` 是本项目实现的最高设计依据；其内容与其他需求、示例或历史实现冲突时，以该文档为准。
-- `docs/XML语法校验工具-设计方案文档.md` 是上游需求参考，仅在不与概要设计冲突时使用。
-- `docs/模块实施计划.md` 记录模块实施顺序与当前进度；开始工作前应先查看该文件，并在阶段状态变化后同步更新。
-- 生产代码由 Claude 按计划实现；Codex 负责阶段实现检查、GTest 编写与验证，不直接实现计划中的生产代码。
-- 项目第一版实现本地、单个 XML 文件与单个 XSD 文件的校验工具：检查 XML 格式良好性并执行 XSD Schema 校验。
-- 目标用户为开发、测试和配置维护人员；优先保证结果准确、错误定位清晰、界面操作简单和程序稳定。
+- 项目第一版已完成，当前工作以缺陷修复、回归验证、文档同步和受控功能演进为主；避免重新执行已完成阶段的实现分工。
+- `docs/概要设计报告.md` 是功能语义、对外接口和版本范围的最高依据。改变这些内容时，先更新该文档，再更新实现、测试和本文件。
+- `docs/模块实施计划.md` 记录已完成阶段、验收记录和后续里程碑；仅在范围、里程碑或验收结论变化时更新，不将日常小修复逐项写入。
+- `README.md` 是构建、发布和使用说明；修改构建预设、依赖、交付物或用户可见行为时同步更新。
+- `docs/项目编码规范.md` 规定头文件保护和 C++17 使用约定。更深层目录若有 `AGENTS.md`，其规则优先。
 
-## 2. 技术基线
+## 2. 当前范围与行为契约
 
-- 使用 C++17、Qt 5.15.x（`Core`、`Gui`、`Widgets`）、CMake、Xerces-C++、spdlog 和 GTest。
-- 保持跨平台兼容性，目标平台为 Windows 10/11 与 Linux x86_64。
-- 路径统一使用 `std::filesystem::path` 表达和处理；在进入校验流程前转换为绝对且词法规范化的路径（不解析符号链接），必须支持中文路径和含空格路径。
-- 通过 CMake 管理依赖，不要在代码中硬编码第三方库、Qt 安装目录或平台专属路径。
-- 新增源文件、测试和依赖时，同步更新 `CMakeLists.txt`，并沿用既有目标与链接方式。
+- 工具校验本地单个 XML 文件和单个 XSD 文件；支持 XSD 的本地 `include`/`import`，拒绝网络资源。
+- 路径使用 `std::filesystem::path`。输入检查必须验证空路径、存在性、普通文件、可读性和空文件，并返回绝对、词法规范化路径；必须支持中文和空格路径。
+- `ValidationResult` 是 GUI、日志和测试之间的稳定结果模型：
+  - `Valid`：XML 格式良好且通过已加载的 XSD。
+  - `Invalid`：校验正常完成，但 XML 格式或内容不符合约束；仅 XML 内容诊断写入 `errors`。
+  - `Failed`：输入、XSD、XSD 依赖、Xerces 初始化或内部异常阻断流程；使用 `message` 说明原因，通常不填充 XML 错误表格。
+- 不得将 XSD 自身错误、文件错误或运行时异常伪装为带 XML 行列号的 `ValidationError`。
+- 第一版不支持批量校验、网络或数据库数据源、手工 Schema 映射、XML/XSD 编辑、报告导出或业务语义校验。
 
-## 3. 分层与模块职责
-
-建议的目录职责如下；创建目录或文件时按此划分，避免将所有逻辑堆入 `main.cpp`：
+## 3. 架构与依赖边界
 
 ```text
-src/
-  gui/          # Qt 窗口、控件、展示模型与用户交互
-  core/         # 不依赖 Qt 的核心业务逻辑与公共结果模型
-    validation/ # XmlValidator、输入检查、结果数据模型
-  infrastructure/ # Xerces-C++ 封装、错误处理器、日志实现
-tests/          # GTest 单元测试
+src/core/validation/          结果模型、输入检查、XmlValidator 编排
+src/infrastructure/xerces/    Xerces 运行时、字符串、错误收集、资源解析、Schema 校验
+src/infrastructure/logging/   日志器与校验记录
+src/gui/                      Qt 主窗口、展示映射、只读 XML 视图与样式
 ```
 
-- **GUI 层**：仅负责文件选择、按钮状态、结果展示和阻断性异常提示；不得直接调用 Xerces-C++ API，也不得解析 Xerces 原始异常对象。
-- **输入检查模块**：负责路径为空、存在性、普通文件、可读性与绝对且词法规范化路径转换；不负责判断 XSD 内容是否合法。
-- **XML 校验模块**：由 `XmlValidator` 组织 Xerces 初始化、Schema 加载、XML 解析、Schema 校验与结果封装。
-- **错误收集模块**：实现 Xerces `ErrorHandler`，将 `warning`、`error`、`fatalError` 转换为项目内部错误结构。
-- **结果模型模块**：仅描述校验结果，不依赖 Qt 控件或 Xerces 原始对象，供 GUI、日志和测试共同使用。
-- **日志模块**：记录运行状态、关键操作和异常。日志失败不得中断或改变校验主流程。
+- `SimpleXmlValidatorCore` 承载 core 与 infrastructure，实现目标私有链接 Xerces-C++ 和 spdlog。
+- `SimpleXmlValidator` 仅链接 Qt 与 `SimpleXmlValidatorCore`；GUI 不得包含 Xerces 或 spdlog 头文件，也不得解析原始异常对象。
+- `XmlValidator` 通过构造函数接收已初始化的 `XercesRuntime`，可选接收 `LogManager`；运行时由 `main.cpp` 作为组合根持有，生命周期必须覆盖校验器和解析对象。
+- Xerces 原始类型不得泄漏到 `core/validation` 的公共结果模型或 GUI；第三方异常必须在 infrastructure 层转换。
+- 日志失败只能静默降级或记录到可用通道，绝不能改变校验结果或中断主流程。
+- 已知技术债：`XercesString` 仍依赖系统本地代码页转码；Windows 非 UTF-8 代码页下，包含中文 XML 名称的 Xerces 诊断可能乱码。涉及字符串转换时优先解决该问题，并补充 Windows 回归验证。
 
-## 4. 必须保持的核心接口与数据语义
+## 4. GUI 与展示规则
 
-除非同步修改 `docs/概要设计报告.md` 并有明确理由，不要改变以下对外语义：
+- XML 和 XSD 均选择后才能校验；校验期间禁止重复提交；取消文件对话框不得清空已有选择。
+- `ValidationResultPresenter` 负责将校验结果映射为 GUI 状态，并保持可脱离 Qt 的 GTest 覆盖。
+- `Valid` 显示通过状态，不显示错误表格；`Invalid` 在主界面展示错误；`Failed` 使用明确的阻断性提示，不把普通 XML 不合格当作弹窗错误。
+- 错误表格固定为“级别、文件、行号、列号、错误描述”五列，支持分页、详情和只读上下文高亮；展示层可合并重复诊断，但日志和结果模型保留原始明细。
+- 保持 `ValidationResultPresenter::kMaxErrorRows` 的防御性上限，禁止引入无界表格渲染。
 
-```cpp
-class XmlValidator {
-public:
-    ValidationResult validate(
-        const std::filesystem::path& xmlPath,
-        const std::filesystem::path& xsdPath);
-};
-```
+## 5. 构建与测试
 
-```cpp
-enum class ValidationStatus { Valid, Invalid, Failed };
-enum class ErrorSeverity { Warning, Error, Fatal };
+- 使用 C++17、CMake 3.30+、Qt 5.15.x、vcpkg manifest（Xerces-C++、spdlog、GTest）。不要硬编码第三方或 Qt 安装路径。
+- 优先使用 `CMakePresets.json`：Linux 配置 `cmake --preset linux-vcpkg -DCMAKE_BUILD_TYPE=Release`，构建 `cmake --build --preset linux-vcpkg-release`，测试 `xvfb-run --auto-servernum ctest --preset linux-vcpkg-release`。
+- 修改核心校验、Xerces 封装、日志或 CMake 后，先运行受影响的 GTest，再运行对应平台的完整 CTest；修改 GUI 展示映射时至少运行 Presenter GTest 和离屏 GUI 冒烟验证。
+- 复用 `tests/xml/valid/`、`tests/xml/invalid/` 和 `tests/xsd/`；修复缺陷必须补充最小回归测试或 fixture。不得通过放松 XSD、吞掉异常或删除失败样例让测试通过。
+- 新增源文件、资源、测试或依赖时，同步更新相应 `CMakeLists.txt`、测试说明和必要的构建文档。
 
-struct ValidationError {
-    ErrorSeverity severity;
-    std::size_t line;
-    std::size_t column;
-    std::string message;
-};
+## 6. 变更纪律
 
-struct ValidationResult {
-    ValidationStatus status;
-    std::vector<ValidationError> errors;
-    std::string message;
-};
-```
-
-- `Valid`：XML 格式良好且通过已成功加载的 XSD 校验；通常没有错误。
-- `Invalid`：校验流程正常完成，但 XML 内容或结构不符合 XSD/格式要求；错误明细放入 `errors`，用于主界面表格展示。
-- `Failed`：输入前置检查失败、XSD 无效或依赖缺失、Schema 加载失败、Xerces 初始化失败或内部异常等阻断性问题；通常不填充 XML 错误表格，而在 `message` 中给出可理解原因。
-- 仅能定位到 XML 内容行列号的问题才构造 `ValidationError`。XSD 自身错误、文件问题和运行时异常必须通过 `Failed` 与日志处理。
-
-## 5. 校验流程与 Xerces 使用要求
-
-实现逻辑应遵守以下顺序：
-
-1. GUI 检查 XML/XSD 是否已选择，并调用输入检查模块。
-2. 输入检查模块验证文件状态，并输出绝对且词法规范化的路径。
-3. `XmlValidator` 初始化并配置 Xerces-C++，启用命名空间和 XML Schema 校验。
-4. 先加载并确认 XSD 可用；XSD 语法、`include`/`import` 或依赖路径错误属于 `Failed`。
-5. 仅当 XSD 成功加载后，解析 XML 并执行格式良好性和 XSD 校验。
-6. 自定义错误处理器收集 XML 解析与校验错误，转换为 `ValidationError`。
-7. 返回完整的 `ValidationResult`，并记录校验摘要及运行异常。
-
-- 需要妥善管理 Xerces 全局初始化与释放，避免重复初始化、资源泄漏和异常穿透 GUI 事件循环。
-- 解析器配置、Schema 处理和 Xerces 字符串转换必须封装在非 GUI 层。
-- 第一版不提供多 Schema 映射、用户手动配置命名空间/`schemaLocation`、远程文件或网络服务校验。
-
-## 6. GUI 行为约束
-
-- 主窗口必须提供 XML 文件选择、XSD 文件选择、开始校验和结果区域。
-- XML 与 XSD 均选择后才允许执行校验；校验期间禁用重复提交。
-- 初始状态不显示结果提示和错误表格。
-- `Valid` 时显示绿色“XML 通过校验”提示，不显示错误表格。
-- `Invalid` 时显示红色“XML 未通过校验”提示、错误数量和可滚动错误表格。表格列固定为：级别、行号、列号、错误描述。
-- `Failed` 和输入问题使用明确的阻断性提示/弹窗；普通 XML 校验不通过不得使用弹窗打断用户。
-- 关闭文件对话框时保持当前状态，不将其视为错误。
-
-## 7. 异常、日志与性能
-
-- 对文件不存在、目录路径、无读取权限、空文件、无效 XSD、XSD 依赖缺失、Xerces 异常及未预期异常提供清晰且可操作的提示。
-- 文件扩展名不符合预期可警告，但不应仅因扩展名而错误拒绝可读取的文件。
-- 顶层必须避免未处理异常导致程序崩溃；运行时异常写入系统日志。
-- XML 校验错误记录行号、列号、级别和描述；运行日志可记录路径、开始/结束时间、状态和异常摘要。
-- 错误数量很大时，界面需要避免无界渲染导致卡顿；完整信息优先保留在结果/日志中。
-- 第一版以正确性为先，不为超大 XML 提前引入复杂并发、取消或批处理机制。
-
-## 8. 测试与验证
-
-- 核心校验逻辑使用 GTest；GUI 行为尽量通过可测试的展示/状态逻辑与业务逻辑解耦。
-- 优先复用 `tests/xml/valid/`、`tests/xml/invalid/` 与 `tests/xsd/` 中的样例。新增回归用例时按合法/非法场景分类存放。
-- 至少覆盖：合法 XML、格式不良好 XML、XSD 结构不匹配、必填元素/属性缺失、类型或枚举值错误、输入路径异常、无效 XSD 与 XSD 依赖加载失败。
-- 修改 CMake 或核心校验代码后，优先运行受影响的 GTest；在依赖齐备时再运行 CMake 配置、构建和完整测试。
-- 不要通过弱化 XSD 约束、吞掉异常或删除失败样例来让测试“通过”。
-
-## 9. 代码与变更约定
-
-- 使用清晰的英文类、函数、变量和文件名；面向用户的界面文本、日志说明与开发文档使用中文。
-- 具体编码规则参见 `docs/项目编码规范.md`，包括头文件宏定义保护和 C++17 特性使用约定。
-- 保持单一职责和最小改动原则，避免无关重构或提前实现本版本范围外的功能。
-- 对跨模块公共类型使用稳定、显式的头文件；避免 GUI、校验器和 Xerces 封装之间产生循环依赖。
-- Git 提交信息遵循 Conventional Commits 规范：`type(scope): subject`。
-- 新功能、接口语义或范围发生变化时，先更新 `docs/概要设计报告.md`，并同步更新测试和本文件中受影响的约定。
+- 使用清晰的英文标识符；用户界面文本、日志说明和开发文档使用中文。
+- 维持单一职责和最小改动，避免无关重构。公共类型放在稳定、显式的头文件中，避免循环依赖。
+- 接口语义、支持范围或用户可见 GUI 行为变更时：更新概要设计、相关 GTest/fixture、README 和实施计划；仅内部重构无需修改概要设计。
+- Git 提交信息使用 Conventional Commits：`type(scope): subject`。
