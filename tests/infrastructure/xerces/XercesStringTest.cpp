@@ -56,4 +56,25 @@ TEST_F(XercesTestFixture, RepeatedScopedConversionsRemainStable) {
     }
 }
 
+#if defined(_WIN32)
+TEST_F(XercesTestFixture, UsesUtf8ForWindowsDiagnosticTextRegardlessOfActiveCodePage) {
+    const XMLCh diagnostic[] = {
+        static_cast<XMLCh>(0x4E2D), static_cast<XMLCh>(0x6587),
+        static_cast<XMLCh>(0x5143), static_cast<XMLCh>(0x7D20),
+        static_cast<XMLCh>(0x9519), static_cast<XMLCh>(0),
+    };
+
+    EXPECT_EQ(fromXMLCh(diagnostic), u8"中文元素错误");
+}
+
+TEST_F(XercesTestFixture, ConvertsWindowsUtf8InputToExpectedUtf16CodeUnits) {
+    ScopedXMLCh encoded(u8"中文");
+
+    ASSERT_NE(encoded.get(), nullptr);
+    EXPECT_EQ(encoded.get()[0], static_cast<XMLCh>(0x4E2D));
+    EXPECT_EQ(encoded.get()[1], static_cast<XMLCh>(0x6587));
+    EXPECT_EQ(encoded.get()[2], static_cast<XMLCh>(0));
+}
+#endif
+
 }
