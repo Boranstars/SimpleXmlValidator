@@ -6,7 +6,6 @@
 #if defined(_WIN32)
 #include <windows.h>
 #endif
-
 namespace simple_xml_validator::infrastructure::xerces {
 
 namespace {

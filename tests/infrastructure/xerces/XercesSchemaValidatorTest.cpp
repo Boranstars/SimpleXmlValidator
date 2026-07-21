@@ -146,6 +146,29 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8RelativeIncludePathOnWindowsAn
     EXPECT_TRUE(result.errors.empty());
     EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
+
+TEST_F(XercesSchemaValidatorTest, CompletesForUtf8TargetNamespacePathsOnWindowsAndMacOS) {
+    const auto inputDirectory = temporaryDirectory_ / u8"命名空间 路径 é";
+    const auto xsdPath = inputDirectory / u8"命名空间架构 é.xsd";
+    const auto xmlPath = inputDirectory / u8"命名空间文档 é.xml";
+    writeFile(xsdPath,
+              "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+              "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
+              "targetNamespace=\"urn:simple-xml-validator:utf8-path\" "
+              "elementFormDefault=\"qualified\">"
+              "<xs:element name=\"root\" type=\"xs:string\"/>"
+              "</xs:schema>");
+    writeFile(xmlPath,
+              "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+              "<root xmlns=\"urn:simple-xml-validator:utf8-path\">valid</root>");
+
+    XercesSchemaValidator validator;
+    const auto result = validator.validate(xmlPath, xsdPath);
+
+    EXPECT_EQ(result.stage, SchemaValidationStage::Completed) << "message: " << result.message;
+    EXPECT_TRUE(result.errors.empty());
+    EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
+}
 #endif
 
 }

@@ -2,6 +2,7 @@
 
 #include "infrastructure/xerces/XercesString.h"
 
+#include <filesystem>
 #include <string>
 
 namespace {
@@ -88,6 +89,29 @@ TEST_F(XercesTestFixture, PreservesWindowsUtf8NonBmpCharacterAsSurrogatePair) {
     EXPECT_EQ(encoded.get()[0], static_cast<XMLCh>(0xD83D));
     EXPECT_EQ(encoded.get()[1], static_cast<XMLCh>(0xDE00));
     EXPECT_EQ(encoded.get()[2], static_cast<XMLCh>(0));
+}
+
+TEST_F(XercesTestFixture, PreservesWindowsUtf8FilesystemPathRoundTrip) {
+    const std::string utf8Path = u8"目录 é.xsd";
+    const std::filesystem::path path = std::filesystem::u8path(utf8Path);
+
+    EXPECT_EQ(path.u8string(), utf8Path);
+}
+
+TEST_F(XercesTestFixture, ConvertsWindowsUtf8FilesystemPathToExpectedUtf16CodeUnits) {
+    const std::filesystem::path path = std::filesystem::u8path(u8"目录 é.xsd");
+    ScopedXMLCh encoded(path);
+
+    ASSERT_NE(encoded.get(), nullptr);
+    EXPECT_EQ(encoded.get()[0], static_cast<XMLCh>(0x76EE));
+    EXPECT_EQ(encoded.get()[1], static_cast<XMLCh>(0x5F55));
+    EXPECT_EQ(encoded.get()[2], static_cast<XMLCh>(0x0020));
+    EXPECT_EQ(encoded.get()[3], static_cast<XMLCh>(0x00E9));
+    EXPECT_EQ(encoded.get()[4], static_cast<XMLCh>(0x002E));
+    EXPECT_EQ(encoded.get()[5], static_cast<XMLCh>(0x0078));
+    EXPECT_EQ(encoded.get()[6], static_cast<XMLCh>(0x0073));
+    EXPECT_EQ(encoded.get()[7], static_cast<XMLCh>(0x0064));
+    EXPECT_EQ(encoded.get()[8], static_cast<XMLCh>(0));
 }
 #endif
 
