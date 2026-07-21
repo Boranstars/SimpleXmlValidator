@@ -102,23 +102,17 @@ TEST_F(XercesSchemaValidatorTest, BlocksRemoteSchemaDependency) {
     EXPECT_NE(result.message.find("拒绝访问网络资源"), std::string::npos);
 }
 
-#if defined(__APPLE__)
-TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnMacOS) {
-    const auto schemaDirectory = temporaryDirectory_ / u8"macOS 架构 é";
-    const auto dependencyPath = schemaDirectory / u8"公共依赖 é.xsd";
-    const auto xsdPath = schemaDirectory / u8"主架构 é.xsd";
-    const auto xmlPath = schemaDirectory / u8"示例文档 é.xml";
-    writeFile(dependencyPath,
-              "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-              "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-              "<xs:element name=\"根\" type=\"xs:string\"/>"
-              "</xs:schema>");
+#if defined(_WIN32) || defined(__APPLE__)
+TEST_F(XercesSchemaValidatorTest, CompletesForUtf8PrimaryInputPathsOnWindowsAndMacOS) {
+    const auto inputDirectory = temporaryDirectory_ / u8"主输入 路径 é";
+    const auto xsdPath = inputDirectory / u8"主架构 é.xsd";
+    const auto xmlPath = inputDirectory / u8"示例文档 é.xml";
     writeFile(xsdPath,
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-              "<xs:include schemaLocation=\"公共依赖 é.xsd\"/>"
+              "<xs:element name=\"root\" type=\"xs:string\"/>"
               "</xs:schema>");
-    writeFile(xmlPath, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><根>有效</根>");
+    writeFile(xmlPath, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>valid</root>");
 
     XercesSchemaValidator validator;
     const auto result = validator.validate(xmlPath, xsdPath);
@@ -127,25 +121,23 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnMac
     EXPECT_TRUE(result.errors.empty());
     EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
-#endif
 
-#if defined(_WIN32)
-TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnWindows) {
-    const auto schemaDirectory = temporaryDirectory_ / u8"Windows 架构 é";
+TEST_F(XercesSchemaValidatorTest, CompletesForUtf8RelativeIncludePathOnWindowsAndMacOS) {
+    const auto schemaDirectory = temporaryDirectory_ / "schema directory";
     const auto dependencyPath = schemaDirectory / u8"公共依赖 é.xsd";
-    const auto xsdPath = schemaDirectory / u8"主架构 é.xsd";
-    const auto xmlPath = schemaDirectory / u8"示例文档 é.xml";
+    const auto xsdPath = schemaDirectory / "schema.xsd";
+    const auto xmlPath = schemaDirectory / "document.xml";
     writeFile(dependencyPath,
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-              "<xs:element name=\"根\" type=\"xs:string\"/>"
+              "<xs:element name=\"root\" type=\"xs:string\"/>"
               "</xs:schema>");
     writeFile(xsdPath,
               "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
               "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
               "<xs:include schemaLocation=\"公共依赖 é.xsd\"/>"
               "</xs:schema>");
-    writeFile(xmlPath, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><根>有效</根>");
+    writeFile(xmlPath, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>valid</root>");
 
     XercesSchemaValidator validator;
     const auto result = validator.validate(xmlPath, xsdPath);
