@@ -1,8 +1,12 @@
 #include "LocalResourceResolver.h"
 
 #include "XercesString.h"
+#include "XercesUri.h"
 
+#include <algorithm>
 #include <cctype>
+#include <filesystem>
+#include <fstream>
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xercesc/util/XMLResourceIdentifier.hpp>
 
@@ -42,8 +46,37 @@ xercesc::InputSource* LocalResourceResolver::resolveEntity(
             kEmpty, 0, resourceIdentifier->getSystemId(), false);
     }
 
-    // 本地相对/绝对路径交由 Xerces 基于 baseURI 默认解析；
-    // 依赖缺失或不可读由解析器上报给错误处理器。
+    // 仅拦截含非 ASCII 字节的相对 schemaLocation：Xerces 的 URI 解析器无法把
+    // 未 percent-encode 的原始 Unicode 字符解析为合法的相对 URI 引用。
+    // ASCII 路径继续返回 nullptr，由 Xerces 基于 file:// baseURI 自行解析（正常工作）。
+    const bool systemIdHasScheme = systemId.find("://") != std::string::npos;
+    const bool systemIdHasNonAscii = std::any_of(systemId.begin(), systemId.end(),
+        [](unsigned char c) { return c > 0x7F; });
+
+    if (!systemId.empty() && !systemIdHasScheme && systemIdHasNonAscii) {
+        const std::string baseUri = fromXMLCh(resourceIdentifier->getBaseURI());
+        if (baseUri.rfind("file://", 0) == 0) {
+            const auto parentDir = pathFromFileUri(baseUri).parent_path();
+            if (!parentDir.empty()) {
+                const auto absolutePath =
+                    (parentDir / std::filesystem::path(systemId)).lexically_normal();
+                std::ifstream file(absolutePath, std::ios::binary);
+                if (file) {
+                    std::string content(std::istreambuf_iterator<char>(file),
+                                        std::istreambuf_iterator<char>{});
+                    const std::string fileUri = toFileUri(absolutePath);
+                    ScopedXMLCh      xmlChUri(fileUri);
+                    auto* buf = new XMLByte[content.size()];
+                    std::copy(content.begin(), content.end(),
+                              reinterpret_cast<char*>(buf));
+                    // adoptBuffer=true：Xerces 负责 delete[] buf
+                    return new xercesc::MemBufInputSource(
+                        buf, content.size(), xmlChUri.get(), true);
+                }
+            }
+        }
+    }
+
     return nullptr;
 }
 

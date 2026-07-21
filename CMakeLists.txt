@@ -74,6 +74,7 @@ add_library(SimpleXmlValidatorCore STATIC
         src/infrastructure/xerces/XercesString.cpp
         src/infrastructure/xerces/XercesRuntime.cpp
         src/infrastructure/xerces/XercesErrorHandler.cpp
+        src/infrastructure/xerces/XercesUri.cpp
         src/infrastructure/xerces/LocalResourceResolver.cpp
         src/infrastructure/xerces/XercesSchemaValidator.cpp
         src/infrastructure/logging/Logger.cpp
