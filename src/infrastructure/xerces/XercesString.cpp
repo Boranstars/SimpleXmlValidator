@@ -55,6 +55,21 @@ ScopedXMLCh::ScopedXMLCh(const char* str) : data_(nullptr) {
 ScopedXMLCh::ScopedXMLCh(const std::string& str)
     : ScopedXMLCh(str.c_str()) {}
 
+ScopedXMLCh::ScopedXMLCh(const std::filesystem::path& path) : data_(nullptr) {
+#if defined(_WIN32)
+    // path.native() 是 std::wstring（UTF-16），与 XMLCh 同宽（2字节），直接复制，
+    // 避免经过 u8string() 的 MSVC bug（u8string() 在某些版本返回 ANSI 而非 UTF-8）。
+    const std::wstring& w = path.native();
+    data_ = static_cast<XMLCh*>(
+        xercesc::XMLPlatformUtils::fgMemoryManager->allocate(
+            (w.size() + 1) * sizeof(XMLCh)));
+    std::memcpy(data_, w.c_str(), w.size() * sizeof(XMLCh));
+    data_[w.size()] = 0;
+#else
+    data_ = xercesc::XMLString::transcode(path.u8string().c_str());
+#endif
+}
+
 ScopedXMLCh::~ScopedXMLCh() {
     if (data_) xercesc::XMLString::release(&data_);
 }

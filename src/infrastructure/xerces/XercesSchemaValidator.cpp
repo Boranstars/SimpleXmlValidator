@@ -50,16 +50,14 @@ SchemaValidationReport XercesSchemaValidator::validate(
     configureParser(parser, handler, resolver);
 
     const std::string xsdPathUtf8 = xsdPath.u8string();
-    const std::string xmlPathUtf8 = xmlPath.u8string();
 
     // 已加载 XSD 的 targetNamespace；空字符串表示无命名空间 Schema。
     std::string targetNamespace;
 
-    // 阶段一：预加载并缓存 XSD Grammar。
-    // 使用 LocalFileInputSource + u8string 路径打开主文件，避免将 file:// URI
-    // 直接交给 Xerces URL 层（其在 Windows/macOS 无法正确处理 percent-encoded 非 ASCII 路径）。
+    // 主文件用 ScopedXMLCh(path) 构造：在 Windows 上直接使用 path.native()（UTF-16），
+    // 避免 MSVC u8string() 的 ANSI codepage bug；在其他平台使用 u8string()。
     try {
-        ScopedXMLCh                   xsdLocation(xsdPathUtf8);
+        ScopedXMLCh                   xsdLocation(xsdPath);
         xercesc::LocalFileInputSource xsdSource(xsdLocation.get());
         xercesc::Grammar* grammar = parser.loadGrammar(
             xsdSource, xercesc::Grammar::SchemaGrammarType, true);
@@ -97,7 +95,7 @@ SchemaValidationReport XercesSchemaValidator::validate(
         handler.resetErrors();
         // 依据 XSD 是否带 targetNamespace 选择合适的外部 Schema 绑定方式。
         if (targetNamespace.empty()) {
-            ScopedXMLCh xsdLocation(xsdPathUtf8);
+            ScopedXMLCh xsdLocation(xsdPath);
             parser.setExternalNoNamespaceSchemaLocation(xsdLocation.get());
         } else {
             ScopedXMLCh schemaLocation(targetNamespace + " " + xsdPathUtf8);
@@ -105,7 +103,7 @@ SchemaValidationReport XercesSchemaValidator::validate(
         }
         parser.useCachedGrammarInParse(true);
 
-        ScopedXMLCh                   xmlLocation(xmlPathUtf8);
+        ScopedXMLCh                   xmlLocation(xmlPath);
         xercesc::LocalFileInputSource xmlSource(xmlLocation.get());
         parser.parse(xmlSource);
 
