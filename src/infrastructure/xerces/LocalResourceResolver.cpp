@@ -49,30 +49,36 @@ xercesc::InputSource* LocalResourceResolver::resolveEntity(
     // 仅拦截含非 ASCII 字节的相对 schemaLocation：Xerces 的 URI 解析器无法把
     // 未 percent-encode 的原始 Unicode 字符解析为合法的相对 URI 引用。
     // ASCII 路径继续返回 nullptr，由 Xerces 基于 file:// baseURI 自行解析（正常工作）。
-    const bool systemIdHasScheme = systemId.find("://") != std::string::npos;
-    const bool systemIdHasNonAscii = std::any_of(systemId.begin(), systemId.end(),
+    const bool systemIdHasScheme    = systemId.find("://") != std::string::npos;
+    const bool systemIdHasNonAscii  = std::any_of(systemId.begin(), systemId.end(),
         [](unsigned char c) { return c > 0x7F; });
 
     if (!systemId.empty() && !systemIdHasScheme && systemIdHasNonAscii) {
-        const std::string baseUri = fromXMLCh(resourceIdentifier->getBaseURI());
+        const std::string     baseUri = fromXMLCh(resourceIdentifier->getBaseURI());
+        std::filesystem::path parentDir;
+
         if (baseUri.rfind("file://", 0) == 0) {
-            const auto parentDir = pathFromFileUri(baseUri).parent_path();
-            if (!parentDir.empty()) {
-                const auto absolutePath =
-                    (parentDir / std::filesystem::path(systemId)).lexically_normal();
-                std::ifstream file(absolutePath, std::ios::binary);
-                if (file) {
-                    std::string content(std::istreambuf_iterator<char>(file),
-                                        std::istreambuf_iterator<char>{});
-                    const std::string fileUri = toFileUri(absolutePath);
-                    ScopedXMLCh      xmlChUri(fileUri);
-                    auto* buf = new XMLByte[content.size()];
-                    std::copy(content.begin(), content.end(),
-                              reinterpret_cast<char*>(buf));
-                    // adoptBuffer=true：Xerces 负责 delete[] buf
-                    return new xercesc::MemBufInputSource(
-                        buf, content.size(), xmlChUri.get(), true);
-                }
+            parentDir = pathFromFileUri(baseUri).parent_path();
+        } else if (!baseUri.empty()) {
+            // getBaseURI() 在某些平台/Xerces 版本可能直接返回本地路径而非 file:// URI
+            try { parentDir = std::filesystem::path(baseUri).parent_path(); } catch (...) {}
+        }
+
+        if (!parentDir.empty()) {
+            // u8path 确保 UTF-8 字符串在 Windows 上也被正确解析为 Unicode 路径
+            const auto absolutePath =
+                (parentDir / std::filesystem::u8path(systemId)).lexically_normal();
+            std::ifstream file(absolutePath, std::ios::binary);
+            if (file) {
+                std::string content(std::istreambuf_iterator<char>(file),
+                                    std::istreambuf_iterator<char>{});
+                const std::string fileUri = toFileUri(absolutePath);
+                ScopedXMLCh      xmlChUri(fileUri);
+                auto*            buf = new XMLByte[content.size()];
+                std::copy(content.begin(), content.end(), reinterpret_cast<char*>(buf));
+                // adoptBuffer=true：Xerces 负责 delete[] buf
+                return new xercesc::MemBufInputSource(
+                    buf, content.size(), xmlChUri.get(), true);
             }
         }
     }

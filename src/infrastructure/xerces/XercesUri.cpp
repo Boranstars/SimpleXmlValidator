@@ -81,7 +81,9 @@ std::filesystem::path pathFromFileUri(std::string_view fileUri) {
     }
 #endif
 
-    return std::filesystem::path(percentDecodeUri(pathPart));
+    // 必须用 u8path 而非 path(string)：后者在 Windows 上用 ANSI codepage，
+    // 不能正确解析 percent-decode 后含中文或 é 的 UTF-8 字节序列。
+    return std::filesystem::u8path(percentDecodeUri(pathPart));
 }
 
 }
