@@ -102,9 +102,9 @@ TEST_F(XercesSchemaValidatorTest, BlocksRemoteSchemaDependency) {
     EXPECT_NE(result.message.find("拒绝访问网络资源"), std::string::npos);
 }
 
-#if defined(__APPLE__)
-TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnMacOS) {
-    const auto schemaDirectory = temporaryDirectory_ / u8"macOS 架构 é";
+#if defined(_WIN32) || defined(__APPLE__)
+TEST_F(XercesSchemaValidatorTest, CompletesForUtf8LocalSchemaDependencyPathOnWindowsAndMacOS) {
+    const auto schemaDirectory = temporaryDirectory_ / u8"跨平台 架构 é";
     const auto dependencyPath = schemaDirectory / u8"公共依赖 é.xsd";
     const auto xsdPath = schemaDirectory / u8"主架构 é.xsd";
     const auto xmlPath = schemaDirectory / u8"示例文档 é.xml";

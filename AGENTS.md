@@ -33,7 +33,7 @@ src/gui/                      Qt 主窗口、展示映射、只读 XML 视图与
 - `XmlValidator` 通过构造函数接收已初始化的 `XercesRuntime`，可选接收 `LogManager`；运行时由 `main.cpp` 作为组合根持有，生命周期必须覆盖校验器和解析对象。
 - Xerces 原始类型不得泄漏到 `core/validation` 的公共结果模型或 GUI；第三方异常必须在 infrastructure 层转换。
 - 日志失败只能静默降级或记录到可用通道，绝不能改变校验结果或中断主流程。
-- 已知技术债：`XercesString` 仍依赖系统本地代码页转码；Windows 非 UTF-8 代码页下，包含中文 XML 名称的 Xerces 诊断可能乱码。涉及字符串转换时优先解决该问题，并补充 Windows 回归验证。
+- `XercesString` 在 Windows 上必须使用显式 UTF-8 转码，不得退回系统本地代码页。Windows 回归覆盖中文诊断、UTF-16 代理对和 UTF-8 本地 XSD 依赖路径；macOS 也覆盖 UTF-8 本地 XSD 依赖路径。
 
 ## 4. GUI 与展示规则
 
