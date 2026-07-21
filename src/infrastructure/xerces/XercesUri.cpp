@@ -1,7 +1,11 @@
 #include "XercesUri.h"
 
+#include <algorithm>
 #include <cctype>
 #include <string_view>
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 
 namespace simple_xml_validator::infrastructure::xerces {
 
@@ -53,8 +57,23 @@ std::string percentDecodeUri(std::string_view encoded) {
 }
 
 std::string toFileUri(const std::filesystem::path& path) {
-    const auto        normalized  = std::filesystem::absolute(path).lexically_normal();
+    const auto normalized = std::filesystem::absolute(path).lexically_normal();
+
+#if defined(_WIN32)
+    // Windows MSVC: generic_u8string() 有 bug，会把 UTF-8 字节误当成本地代码页字符
+    // 导致中文等非 ASCII 字符双重编码。改用 generic_wstring() + 手动 UTF-16→UTF-8。
+    const std::wstring wpath = normalized.generic_wstring();
+    const int needed = WideCharToMultiByte(
+        CP_UTF8, 0, wpath.c_str(), static_cast<int>(wpath.size()),
+        nullptr, 0, nullptr, nullptr);
+    if (needed <= 0) return {};
+    std::string genericPath(needed, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wpath.c_str(), static_cast<int>(wpath.size()),
+                        genericPath.data(), needed, nullptr, nullptr);
+#else
     const std::string genericPath = normalized.generic_u8string();
+#endif
+
     const std::string encodedPath = percentEncodeUriPath(genericPath);
 
 #if defined(_WIN32)
