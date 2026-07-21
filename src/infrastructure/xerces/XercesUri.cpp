@@ -36,8 +36,7 @@ std::string toFileUri(const std::filesystem::path& path) {
     const auto normalized = std::filesystem::absolute(path).lexically_normal();
 
 #if defined(_WIN32)
-    // Windows MSVC: generic_u8string() 有 bug，会把 UTF-8 字节误当成本地代码页字符。
-    // 改用 generic_wstring() + WideCharToMultiByte 安全转为 UTF-8。
+    // Windows 使用原生 UTF-16 路径并显式转换为 UTF-8，避免依赖窄字符或当前代码页。
     const std::wstring wpath = normalized.generic_wstring();
     const int needed = WideCharToMultiByte(
         CP_UTF8, 0, wpath.c_str(), static_cast<int>(wpath.size()),

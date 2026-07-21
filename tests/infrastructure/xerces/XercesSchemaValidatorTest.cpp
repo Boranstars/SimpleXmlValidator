@@ -146,8 +146,9 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8RelativeIncludePathOnWindowsAn
     EXPECT_TRUE(result.errors.empty());
     EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
+#endif
 
-TEST_F(XercesSchemaValidatorTest, CompletesForUtf8TargetNamespacePathsOnWindowsAndMacOS) {
+TEST_F(XercesSchemaValidatorTest, CompletesForUtf8TargetNamespacePaths) {
     const auto inputDirectory = temporaryDirectory_ / std::filesystem::u8path(u8"命名空间 路径 é");
     const auto xsdPath = inputDirectory / std::filesystem::u8path(u8"命名空间架构 é.xsd");
     const auto xmlPath = inputDirectory / std::filesystem::u8path(u8"命名空间文档 é.xml");
@@ -169,6 +170,5 @@ TEST_F(XercesSchemaValidatorTest, CompletesForUtf8TargetNamespacePathsOnWindowsA
     EXPECT_TRUE(result.errors.empty());
     EXPECT_TRUE(result.message.empty()) << "message: " << result.message;
 }
-#endif
 
 }
