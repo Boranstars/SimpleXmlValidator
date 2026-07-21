@@ -61,7 +61,8 @@ TEST_F(XercesTestFixture, UsesUtf8ForWindowsDiagnosticTextRegardlessOfActiveCode
     const XMLCh diagnostic[] = {
         static_cast<XMLCh>(0x4E2D), static_cast<XMLCh>(0x6587),
         static_cast<XMLCh>(0x5143), static_cast<XMLCh>(0x7D20),
-        static_cast<XMLCh>(0x9519), static_cast<XMLCh>(0),
+        static_cast<XMLCh>(0x9519), static_cast<XMLCh>(0x8BEF),
+        static_cast<XMLCh>(0),
     };
 
     EXPECT_EQ(fromXMLCh(diagnostic), u8"中文元素错误");
