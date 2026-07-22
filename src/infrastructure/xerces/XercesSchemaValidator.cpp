@@ -3,6 +3,7 @@
 #include "LocalResourceResolver.h"
 #include "XercesErrorHandler.h"
 #include "XercesString.h"
+#include "XercesUri.h"
 
 #include <xercesc/dom/DOMException.hpp>
 #include <xercesc/framework/LocalFileInputSource.hpp>
@@ -98,7 +99,9 @@ SchemaValidationReport XercesSchemaValidator::validate(
             ScopedXMLCh xsdLocation(xsdPathUtf8);
             parser.setExternalNoNamespaceSchemaLocation(xsdLocation.get());
         } else {
-            ScopedXMLCh schemaLocation(targetNamespace + " " + xsdPathUtf8);
+            // setExternalSchemaLocation 要求 URI 而非原始路径；
+            // 原始非 ASCII 路径在 Windows/macOS 上导致 schema 绑定失败。
+            ScopedXMLCh schemaLocation(targetNamespace + " " + toFileUri(xsdPath));
             parser.setExternalSchemaLocation(schemaLocation.get());
         }
         parser.useCachedGrammarInParse(true);
