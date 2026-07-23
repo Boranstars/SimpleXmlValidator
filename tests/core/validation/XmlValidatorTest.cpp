@@ -243,6 +243,16 @@ TEST_F(XmlValidatorTest, ReturnsInvalidForMalformedXml) {
     }));
 }
 
+TEST_F(XmlValidatorTest, ReturnsInvalidForExcessiveEntityExpansion) {
+    XmlValidator validator(runtime());
+    const ValidationResult result = validator.validate(
+        fixturePath("tests/xml/invalid/xml_bomb.xml"),
+        fixturePath("tests/xsd/minimal.xsd"));
+
+    ASSERT_EQ(result.status, ValidationStatus::Invalid);
+    EXPECT_TRUE(hasLocatedBlockingError(result));
+}
+
 TEST_F(XmlValidatorTest, ReturnsValidForTargetNamespaceSchema) {
     const auto xsdPath = temporaryDirectory_ / "schema.xsd";
     const auto xmlPath = temporaryDirectory_ / "document.xml";
