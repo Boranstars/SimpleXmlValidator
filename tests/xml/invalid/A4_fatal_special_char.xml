@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CheckReport>
+    <System>
+        <!-- 错误点：文本中直接使用了未经转义的 < 符号，应写为 &lt; -->
+        <Substation>某变电站 < 东区</Substation>
+        <CheckTime>2026-06-10 08:00:00</CheckTime>
+        <CheckReason>1</CheckReason>
+        <DeviceSum>10</DeviceSum>
+        <CheckDeviceSum>10</CheckDeviceSum>
+        <AbnormalDeviceSum>2</AbnormalDeviceSum>
+    </System>
+    <Ied>
+        <Item DeviceId="DEV001" DeviceName="线路保护A" IsChecked="1" UnCheckReason="0" Result="0">
+            <Zone IsChecked="1" UnCheckReason="0" result="0"/>
+        </Item>
+    </Ied>
+    <DiffZone>
+        <Item DeviceId="DEV001" PointId="PT_ZONE1" PointName="定值区1" ValType="int" RefVal="1" RealVal="1" CheckTime="2026-06-10 08:00:00" IsDifferent="0"/>
+    </DiffZone>
+</CheckReport>

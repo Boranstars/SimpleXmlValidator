@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<APP appname="setting94" appdesc="setting94">
+    <QueryTime time="2025-10-14 09:57:05.584">
+        <IED name="P_L5006A" desc="500kV线路保护">
+            <!-- 错误点：文本中直接使用了未经转义的 < 符号，应写为 &lt; -->
+            <Result>比对 < 一致</Result> 
+        </IED>
+    </QueryTime>
+</APP>
