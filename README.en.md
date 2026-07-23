@@ -27,7 +27,7 @@ The current version focuses on validating a **single local XML file against a si
 
 ### Download a Release
 
-Download the package for your platform from the [Releases](https://github.com/Boranstars/SimpleXmlValidator/releases) page. The latest tag is [`v0.0.3`](https://github.com/Boranstars/SimpleXmlValidator/releases/tag/v0.0.3) (2026-07-20). Each release includes:
+Download the package for your platform from the [Releases](https://github.com/Boranstars/SimpleXmlValidator/releases) page. The latest tag is [`v0.1.0`](https://github.com/Boranstars/SimpleXmlValidator/releases/tag/v0.1.0) (2026-07-23). Each release includes:
 
 | Platform | File | How to run |
 | --- | --- | --- |

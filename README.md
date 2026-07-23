@@ -27,7 +27,7 @@
 
 ### 从 Release 安装
 
-请在 [Releases](https://github.com/Boranstars/SimpleXmlValidator/releases) 页面下载与系统对应的附件。当前仓库最新标签为 [`v0.0.3`](https://github.com/Boranstars/SimpleXmlValidator/releases/tag/v0.0.3)（2026-07-20）；每个版本的发布流程会生成以下文件：
+请在 [Releases](https://github.com/Boranstars/SimpleXmlValidator/releases) 页面下载与系统对应的附件。当前仓库最新标签为 [`v0.1.0`](https://github.com/Boranstars/SimpleXmlValidator/releases/tag/v0.1.0)（2026-07-23）；每个版本的发布流程会生成以下文件：
 
 | 平台 | 发布文件 | 使用方式 |
 | --- | --- | --- |
