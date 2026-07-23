@@ -9,6 +9,7 @@
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
+#include <xercesc/util/SecurityManager.hpp>
 #include <xercesc/util/XMLException.hpp>
 #include <xercesc/validators/common/Grammar.hpp>
 
@@ -30,13 +31,15 @@ std::string summarize(const std::vector<ValidationError>& errors) {
 
 void configureParser(xercesc::XercesDOMParser& parser,
                      xercesc::ErrorHandler& handler,
-                     xercesc::XMLEntityResolver& resolver) {
+                     xercesc::XMLEntityResolver& resolver,
+                     xercesc::SecurityManager& securityManager) {
     parser.setValidationScheme(xercesc::XercesDOMParser::Val_Always);
     parser.setDoNamespaces(true);
     parser.setDoSchema(true);
     parser.setValidationSchemaFullChecking(true);
     parser.setErrorHandler(&handler);
     parser.setXMLEntityResolver(&resolver);
+    parser.setSecurityManager(&securityManager);
 }
 
 }
@@ -46,9 +49,11 @@ SchemaValidationReport XercesSchemaValidator::validate(
     const std::filesystem::path& xsdPath) {
     XercesErrorHandler    handler;
     LocalResourceResolver resolver;
+    xercesc::SecurityManager securityManager;
+    securityManager.setEntityExpansionLimit(100'000);
 
     xercesc::XercesDOMParser parser;
-    configureParser(parser, handler, resolver);
+    configureParser(parser, handler, resolver, securityManager);
 
     const std::string xsdPathUtf8 = xsdPath.u8string();
     const std::string xmlPathUtf8 = xmlPath.u8string();
